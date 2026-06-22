@@ -264,9 +264,9 @@ const CONFIG = {
 
   // Usuários do sistema (senha hash em produção — aqui simplificado)
   USERS: {
-    'jucineide':    { pass: 'cg2026jus', name: 'Dra. Jucineide', role: 'supervisor', initials: 'JC' },
-    'operacional1': { pass: 'cg2026op1', name: 'Ana (Operacional)', role: 'operacional', initials: 'AN' },
-    'operacional2': { pass: 'cg2026op2', name: 'Maria (Operacional)', role: 'operacional', initials: 'MO' },
+    'jucineide':    { pass: '1234', name: 'Dra. Jucineide', role: 'supervisor', initials: 'JC' },
+    'operacional1': { pass: '1234', name: 'Ana (Operacional)', role: 'operacional', initials: 'AN' },
+    'operacional2': { pass: '1234', name: 'Maria (Operacional)', role: 'operacional', initials: 'MO' },
   }
 };
 </script>
@@ -283,10 +283,16 @@ const CONFIG = {
     </div>
     <div class="form-group">
       <label>Senha</label>
-      <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password"/>
+      <div style="position:relative">
+        <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password" style="padding-right:42px"/>
+        <button type="button" onclick="toggleSenha()" id="btn-olho" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:var(--gray-400);padding:0;line-height:1" title="Mostrar/ocultar senha">👁️</button>
+      </div>
     </div>
     <p id="login-error" style="color:var(--marsala);font-size:12px;margin-bottom:12px;display:none">Usuário ou senha incorretos.</p>
     <button class="btn btn-primary" onclick="doLogin()">Entrar</button>
+    <p style="text-align:center;margin-top:14px">
+      <span onclick="abrirEsqueciSenha()" style="font-size:12px;color:var(--marsala);cursor:pointer;text-decoration:underline">Esqueci minha senha</span>
+    </p>
     <p class="text-muted mt-16" style="text-align:center">Sistema interno — acesso autorizado apenas</p>
   </div>
 </div>
@@ -518,6 +524,36 @@ const CONFIG = {
 </div><!-- /app -->
 
 <!-- ═══ MODAIS ═══ -->
+<!-- ═══ MODAL ESQUECI SENHA ═══ -->
+<div class="modal-overlay" id="modal-senha">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Recuperar Acesso</div>
+      <button class="modal-close" onclick="closeModal('modal-senha')">×</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--gray-600);margin-bottom:20px">
+        Como o sistema é de uso interno restrito, a recuperação de senha é feita diretamente pela administradora do sistema.
+      </p>
+      <div style="background:var(--gold-pale);border:1px solid var(--gold);border-radius:var(--radius);padding:16px;font-size:13px;margin-bottom:16px">
+        <strong style="color:var(--gold)">Entre em contato com a Dra. Jucineide:</strong><br><br>
+        📱 WhatsApp: <a href="https://wa.me/5587998094537" target="_blank" style="color:var(--marsala);font-weight:500">(87) 9.9809-4537</a><br>
+        ✉️ E-mail: <a href="mailto:jucineidecosta@hotmail.com" style="color:var(--marsala);font-weight:500">jucineidecosta@hotmail.com</a>
+      </div>
+      <div style="background:var(--gray-100);border-radius:var(--radius);padding:14px;font-size:12px;color:var(--gray-600)">
+        <strong>Usuários e senhas padrão:</strong><br>
+        • Supervisora: <code>jucineide</code> / senha definida pela Dra. Jucineide<br>
+        • Operacional 1: <code>operacional1</code> / senha definida pela Dra. Jucineide<br>
+        • Operacional 2: <code>operacional2</code> / senha definida pela Dra. Jucineide<br><br>
+        <em>As senhas são alteradas diretamente no arquivo do sistema pela administradora.</em>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="closeModal('modal-senha')">Entendido</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal-reajuste">
   <div class="modal">
     <div class="modal-header"><div class="modal-title">Solicitar Reajuste</div><button class="modal-close" onclick="closeModal('modal-reajuste')">×</button></div>
@@ -610,6 +646,22 @@ function doLogin() {
 }
 
 document.getElementById('login-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+function toggleSenha() {
+  const input = document.getElementById('login-pass');
+  const btn = document.getElementById('btn-olho');
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.textContent = '🙈';
+  } else {
+    input.type = 'password';
+    btn.textContent = '👁️';
+  }
+}
+
+function abrirEsqueciSenha() {
+  document.getElementById('modal-senha').classList.add('open');
+}
 
 function doLogout() {
   currentUser = null;
