@@ -218,6 +218,114 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--gr
 .cred-banner-text { flex:1; font-size:13px; line-height:1.6; }
 .cred-banner-text strong { color:var(--gold-light); }
 
+/* STAT CARDS CLICÁVEIS */
+.stat-clickable {
+  cursor: pointer;
+  transition: all 0.18s;
+  position: relative;
+}
+.stat-clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--gold);
+}
+.stat-hint {
+  font-size: 10px;
+  color: var(--gray-400);
+  margin-top: 6px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.stat-clickable:hover .stat-hint { opacity: 1; }
+
+/* CASO CARD NO DASH */
+.dash-caso-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 0.15s;
+  border-bottom: 1px solid var(--gray-100);
+}
+.dash-caso-item:last-child { border-bottom: none; }
+.dash-caso-item:hover { background: var(--gray-100); }
+.dash-caso-nome { font-size: 13px; font-weight: 500; color: var(--gray-800); }
+.dash-caso-sub { font-size: 11px; color: var(--gray-400); }
+.dash-caso-arrow { margin-left: auto; color: var(--gray-400); font-size: 14px; }
+
+/* NOTIF ITEM CLICÁVEL */
+.notif-item { cursor: pointer; transition: background 0.15s; }
+.notif-item:hover { background: var(--gray-100) !important; }
+
+/* MODAL CASO COMPLETO */
+.modal-caso-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.modal-caso-meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+.modal-caso-peca {
+  background: var(--gray-100);
+  border-radius: var(--radius);
+  padding: 16px;
+  font-size: 12px;
+  line-height: 1.7;
+  max-height: 320px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  color: var(--gray-800);
+  margin-top: 12px;
+  border: 1px solid var(--gray-200);
+}
+
+/* FILA STATS */
+.fila-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.fila-stat {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+}
+.fila-stat:hover { border-color: var(--marsala); background: #FDF8F8; }
+.fila-stat.ativo { border-color: var(--marsala); background: #FDF8F8; border-width: 2px; }
+.fila-stat-valor { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 600; color: var(--navy); }
+.fila-stat-label { font-size: 11px; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+
+/* APROV STATS */
+.aprov-resumo {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.aprov-chip {
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: 1.5px solid var(--gray-200);
+  color: var(--gray-600);
+}
+.aprov-chip:hover { border-color: var(--marsala); color: var(--marsala); }
+.aprov-chip.ativo { background: var(--marsala); color: var(--white); border-color: var(--marsala); }
+
 /* UPLOAD ZONES */
 .upload-zone {
   border:2px dashed var(--gray-200);
@@ -356,10 +464,30 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--gr
         </div>
 
         <div class="stats-row">
-          <div class="stat-card c1"><div class="stat-label">Aguardando Aprovação</div><div class="stat-value" id="stat-aprov">0</div><div class="stat-sub">peças geradas</div></div>
-          <div class="stat-card c2"><div class="stat-label">Em Elaboração</div><div class="stat-value" id="stat-elab">0</div><div class="stat-sub">em processamento</div></div>
-          <div class="stat-card c3"><div class="stat-label">Protocolados Hoje</div><div class="stat-value" id="stat-prot">0</div><div class="stat-sub">no INSS</div></div>
-          <div class="stat-card c4"><div class="stat-label">Total do Mês</div><div class="stat-value" id="stat-mes">0</div><div class="stat-sub">requerimentos</div></div>
+          <div class="stat-card c1 stat-clickable" onclick="filtrarFilaPor('aguardando_aprovacao')" title="Ver peças aguardando aprovação">
+            <div class="stat-label">Aguardando Aprovação</div>
+            <div class="stat-value" id="stat-aprov">0</div>
+            <div class="stat-sub">peças geradas</div>
+            <div class="stat-hint">▸ clique para ver</div>
+          </div>
+          <div class="stat-card c2 stat-clickable" onclick="filtrarFilaPor('gerada')" title="Ver casos em elaboração">
+            <div class="stat-label">Em Elaboração</div>
+            <div class="stat-value" id="stat-elab">0</div>
+            <div class="stat-sub">em processamento</div>
+            <div class="stat-hint">▸ clique para ver</div>
+          </div>
+          <div class="stat-card c3 stat-clickable" onclick="filtrarFilaPor('protocolada_hoje')" title="Ver protocolados hoje">
+            <div class="stat-label">Protocolados Hoje</div>
+            <div class="stat-value" id="stat-prot">0</div>
+            <div class="stat-sub">no INSS</div>
+            <div class="stat-hint">▸ clique para ver</div>
+          </div>
+          <div class="stat-card c4 stat-clickable" onclick="filtrarFilaPor('todos')" title="Ver todos os casos do mês">
+            <div class="stat-label">Total do Mês</div>
+            <div class="stat-value" id="stat-mes">0</div>
+            <div class="stat-sub">requerimentos</div>
+            <div class="stat-hint">▸ clique para ver</div>
+          </div>
         </div>
 
         <div class="two-col">
@@ -554,6 +682,27 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--gr
           <div class="page-title">Fila de Casos</div>
           <div class="page-subtitle">Todos os casos em andamento</div>
         </div>
+
+        <!-- Stats clicáveis da fila -->
+        <div class="fila-stats" id="fila-stats-row">
+          <div class="fila-stat ativo" onclick="filtrarFilaPor('todos',this)">
+            <div class="fila-stat-valor" id="fs-todos">0</div>
+            <div class="fila-stat-label">Todos</div>
+          </div>
+          <div class="fila-stat" onclick="filtrarFilaPor('aguardando_aprovacao',this)">
+            <div class="fila-stat-valor" id="fs-aprov" style="color:var(--warning)">0</div>
+            <div class="fila-stat-label">Aguard. Aprovação</div>
+          </div>
+          <div class="fila-stat" onclick="filtrarFilaPor('aprovada',this)">
+            <div class="fila-stat-valor" id="fs-aprov2" style="color:var(--success)">0</div>
+            <div class="fila-stat-label">Aprovadas</div>
+          </div>
+          <div class="fila-stat" onclick="filtrarFilaPor('protocolada',this)">
+            <div class="fila-stat-valor" id="fs-prot" style="color:#6B3D8B">0</div>
+            <div class="fila-stat-label">Protocoladas</div>
+          </div>
+        </div>
+
         <div class="card">
           <table class="case-table">
             <thead><tr><th>Cliente</th><th>Benefício</th><th>Elaborado por</th><th>Data Elaboração</th><th>Status</th><th>Protocolo</th><th></th></tr></thead>
@@ -568,6 +717,13 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--gr
           <div class="page-title">Aprovações</div>
           <div class="page-subtitle">Peças aguardando sua revisão e aprovação final</div>
         </div>
+        <!-- Chips de filtro -->
+        <div class="aprov-resumo" id="aprov-chips">
+          <div class="aprov-chip ativo" onclick="filtrarAprov('pendentes',this)">⏳ Pendentes <span id="chip-pendentes">0</span></div>
+          <div class="aprov-chip" onclick="filtrarAprov('reajuste',this)">🔄 Em Reajuste <span id="chip-reajuste">0</span></div>
+          <div class="aprov-chip" onclick="filtrarAprov('aprovadas',this)">✅ Aprovadas <span id="chip-aprovadas">0</span></div>
+          <div class="aprov-chip" onclick="filtrarAprov('todas',this)">📋 Todas <span id="chip-todas">0</span></div>
+        </div>
         <div id="aprovacoes-list"><p class="text-muted">Nenhuma peça aguardando aprovação.</p></div>
       </div>
 
@@ -576,6 +732,13 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--gr
         <div class="page-header">
           <div class="page-title">Notificações</div>
           <div class="page-subtitle">Atualizações e reajustes realizados pelo operacional</div>
+        </div>
+        <!-- Filtros notificações -->
+        <div class="aprov-resumo">
+          <div class="aprov-chip ativo" onclick="filtrarNotifs('todas',this)">🔔 Todas</div>
+          <div class="aprov-chip" onclick="filtrarNotifs('nao_lidas',this)">🔴 Não lidas</div>
+          <div class="aprov-chip" onclick="filtrarNotifs('reajuste',this)">🔄 Reajustes</div>
+          <div class="aprov-chip" onclick="filtrarNotifs('protocolo',this)">✅ Protocolos</div>
         </div>
         <div id="notif-list"><p class="text-muted">Sem notificações.</p></div>
       </div>
@@ -597,6 +760,46 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--gr
 </div><!-- /app -->
 
 <!-- ═══ MODAIS ═══ -->
+<!-- ═══ MODAL CASO COMPLETO ═══ -->
+<div class="modal-overlay" id="modal-caso">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-header">
+      <div class="modal-caso-header">
+        <div class="modal-title" id="mc-nome"></div>
+        <div class="modal-caso-meta">
+          <span class="status" id="mc-status-badge"></span>
+          <span class="text-muted" id="mc-meta"></span>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeModal('modal-caso')">×</button>
+    </div>
+    <div class="modal-body" style="padding:20px 24px">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px">
+        <div style="background:var(--gray-100);border-radius:var(--radius);padding:10px 12px">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--gray-400);margin-bottom:3px">Benefício</div>
+          <div style="font-size:13px;font-weight:500" id="mc-beneficio"></div>
+        </div>
+        <div style="background:var(--gray-100);border-radius:var(--radius);padding:10px 12px">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--gray-400);margin-bottom:3px">Elaborado por</div>
+          <div style="font-size:13px;font-weight:500" id="mc-elaborado"></div>
+        </div>
+        <div style="background:var(--gray-100);border-radius:var(--radius);padding:10px 12px">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--gray-400);margin-bottom:3px">Protocolo</div>
+          <div style="font-size:13px;font-weight:500" id="mc-protocolo"></div>
+        </div>
+      </div>
+      <div id="mc-alertas"></div>
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--gray-400);margin-bottom:6px">Peça gerada</div>
+      <div class="modal-caso-peca" id="mc-peca"></div>
+    </div>
+    <div class="modal-footer" style="border-top:1px solid var(--gray-200)">
+      <button class="btn btn-outline btn-sm" onclick="closeModal('modal-caso')">Fechar</button>
+      <button class="btn btn-gold btn-sm" id="mc-btn-aprovar" style="display:none" onclick="aprovarDoCaso()">✅ Aprovar</button>
+      <button class="btn btn-success btn-sm" id="mc-btn-protocolar" style="display:none" onclick="protocolarDoCaso()">📤 Protocolar</button>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ MODAL ESQUECI SENHA ═══ -->
 <div class="modal-overlay" id="modal-senha">
   <div class="modal">
@@ -1327,97 +1530,257 @@ function confirmarProtocolo() {
 // ════════════════════════════════════════
 //  RENDERIZAÇÕES
 // ════════════════════════════════════════
+// ════════════════════════════════════════
+//  DASHBOARD DINÂMICO
+// ════════════════════════════════════════
+let casoAtualModal = null;
+let filtroFilaAtivo = 'todos';
+let filtroAprovAtivo = 'pendentes';
+let filtroNotifAtivo = 'todas';
+
+function refreshDashboard() {
+  const aprov = casos.filter(c => ['aguardando_aprovacao','reajuste'].includes(c.status)).length;
+  const elab  = casos.filter(c => c.status === 'gerada').length;
+  const hoje  = new Date().toLocaleDateString('pt-BR').slice(0,8);
+  const prot  = casos.filter(c => c.status === 'protocolada' && c.protocolo?.data?.includes(hoje)).length;
+
+  document.getElementById('stat-aprov').textContent = aprov;
+  document.getElementById('stat-elab').textContent  = elab;
+  document.getElementById('stat-prot').textContent  = prot;
+  document.getElementById('stat-mes').textContent   = casos.length;
+
+  // Stats fila
+  if (document.getElementById('fs-todos')) {
+    document.getElementById('fs-todos').textContent  = casos.length;
+    document.getElementById('fs-aprov').textContent  = aprov;
+    document.getElementById('fs-aprov2').textContent = casos.filter(c => c.status === 'aprovada').length;
+    document.getElementById('fs-prot').textContent   = casos.filter(c => c.status === 'protocolada').length;
+  }
+
+  // Chips aprovações
+  if (document.getElementById('chip-pendentes')) {
+    document.getElementById('chip-pendentes').textContent = casos.filter(c => c.status === 'aguardando_aprovacao').length;
+    document.getElementById('chip-reajuste').textContent  = casos.filter(c => c.status === 'reajuste').length;
+    document.getElementById('chip-aprovadas').textContent = casos.filter(c => c.status === 'aprovada').length;
+    document.getElementById('chip-todas').textContent     = casos.length;
+  }
+
+  atualizarBadges();
+  renderDashCasos();
+  renderDashNotifs();
+}
+
+function renderDashCasos() {
+  const el = document.getElementById('dash-casos');
+  const recentes = casos.slice(-5).reverse();
+  if (!recentes.length) { el.innerHTML = '<p class="text-muted">Nenhum caso registrado ainda.</p>'; return; }
+  el.innerHTML = recentes.map(c => `
+    <div class="dash-caso-item" onclick="abrirModalCaso('${c.id}')">
+      <div>
+        <div class="dash-caso-nome">${c.cliente.split(' ').slice(0,3).join(' ')}</div>
+        <div class="dash-caso-sub">${c.beneficio} · ${c.dataElaboracao}</div>
+      </div>
+      <span class="status ${statusCls(c.status)}" style="font-size:10px"><span class="status-dot"></span>${statusLabel(c.status)}</span>
+      <span class="dash-caso-arrow">›</span>
+    </div>`).join('');
+}
+
+function renderDashNotifs() {
+  const el = document.getElementById('dash-notifs');
+  const recentes = notificacoes.slice(-4).reverse();
+  if (!recentes.length) { el.innerHTML = '<p class="text-muted">Sem notificações.</p>'; return; }
+  el.innerHTML = recentes.map(n => `
+    <div class="notif-item ${n.lida ? '' : 'unread'}" style="margin-bottom:8px" onclick="marcarLida('${n.id}')">
+      <div class="notif-icon" style="font-size:18px">${n.icone}</div>
+      <div>
+        <div class="notif-title" style="font-size:12px">${n.texto}</div>
+        <div class="notif-meta">${n.por} · ${n.data}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ════════════════════════════════════════
+//  FILTROS
+// ════════════════════════════════════════
+function filtrarFilaPor(filtro, el) {
+  filtroFilaAtivo = filtro;
+  // Atualiza chip ativo na fila
+  if (el) {
+    document.querySelectorAll('.fila-stat').forEach(f => f.classList.remove('ativo'));
+    el.classList.add('ativo');
+  }
+  showPage('fila');
+  renderFila();
+}
+
+function filtrarAprov(filtro, el) {
+  filtroAprovAtivo = filtro;
+  document.querySelectorAll('.aprov-chip').forEach(c => c.classList.remove('ativo'));
+  el.classList.add('ativo');
+  renderAprovacoes();
+}
+
+function filtrarNotifs(filtro, el) {
+  filtroNotifAtivo = filtro;
+  document.querySelectorAll('#page-notificacoes .aprov-chip').forEach(c => c.classList.remove('ativo'));
+  el.classList.add('ativo');
+  renderNotificacoes();
+}
+
+// ════════════════════════════════════════
+//  MODAL CASO COMPLETO
+// ════════════════════════════════════════
+function abrirModalCaso(casoId) {
+  const c = casos.find(x => x.id === casoId);
+  if (!c) return;
+  casoAtualModal = c;
+
+  document.getElementById('mc-nome').textContent = c.cliente;
+  document.getElementById('mc-beneficio').textContent = c.beneficio;
+  document.getElementById('mc-elaborado').textContent = c.elaboradoPor + ' · ' + c.dataElaboracao;
+  document.getElementById('mc-protocolo').textContent = c.protocolo ? c.protocolo.data + (c.protocolo.numero ? ' · Nº ' + c.protocolo.numero : '') : '—';
+  document.getElementById('mc-peca').textContent = c.peca || 'Peça não disponível.';
+
+  const badge = document.getElementById('mc-status-badge');
+  badge.className = 'status ' + statusCls(c.status);
+  badge.innerHTML = `<span class="status-dot"></span>${statusLabel(c.status)}`;
+
+  document.getElementById('mc-meta').textContent = c.mes || '';
+
+  // Alertas
+  const alertEl = document.getElementById('mc-alertas');
+  if (c.alertas?.length) {
+    alertEl.innerHTML = `<div class="alert-block" style="margin-bottom:12px"><div class="alert-title">⚠️ Alertas</div>${c.alertas.map(a=>`<div class="alert-item"><span>•</span>${a}</div>`).join('')}</div>`;
+  } else { alertEl.innerHTML = ''; }
+
+  // Botões contextuais
+  document.getElementById('mc-btn-aprovar').style.display  = ['aguardando_aprovacao','reajuste'].includes(c.status) && currentUser?.role === 'supervisor' ? 'inline-flex' : 'none';
+  document.getElementById('mc-btn-protocolar').style.display = c.status === 'aprovada' ? 'inline-flex' : 'none';
+
+  openModal('modal-caso');
+}
+
+function aprovarDoCaso() {
+  if (casoAtualModal) { aprovarCaso(casoAtualModal.id); closeModal('modal-caso'); }
+}
+
+function protocolarDoCaso() {
+  if (casoAtualModal) { currentCasoId = casoAtualModal.id; closeModal('modal-caso'); openModal('modal-protocolo'); }
+}
+
+// ════════════════════════════════════════
+//  RENDERIZAÇÕES ATUALIZADAS
+// ════════════════════════════════════════
+function statusCls(s) {
+  return { gerada:'s-gerada', aguardando_aprovacao:'s-revisao', aprovada:'s-aprovada', protocolada:'s-protocolada', reajuste:'s-reajuste' }[s] || 's-gerada';
+}
+function statusLabel(s) {
+  return { gerada:'Gerada', aguardando_aprovacao:'Aguard. Aprovação', aprovada:'Aprovada', protocolada:'Protocolada', reajuste:'Em Reajuste' }[s] || s;
+}
+
 function renderFila() {
   const tbody = document.getElementById('fila-tbody');
-  if (!casos.length) { tbody.innerHTML = '<tr><td colspan="7" class="text-muted" style="text-align:center;padding:24px">Nenhum caso na fila.</td></tr>'; return; }
-  tbody.innerHTML = casos.map(c => {
-    const statusMap = { gerada:'s-gerada', aguardando_aprovacao:'s-revisao', aprovada:'s-aprovada', protocolada:'s-protocolada', reajuste:'s-reajuste' };
-    const labelMap = { gerada:'Gerada', aguardando_aprovacao:'Aguard. Aprovação', aprovada:'Aprovada', protocolada:'Protocolada', reajuste:'Em Reajuste' };
-    const cls = statusMap[c.status] || 's-gerada';
-    const lbl = labelMap[c.status] || c.status;
-    const btnProtocolo = c.status === 'aprovada'
+  let lista = casos;
+  if (filtroFilaAtivo === 'aguardando_aprovacao') lista = casos.filter(c => ['aguardando_aprovacao','reajuste'].includes(c.status));
+  else if (filtroFilaAtivo === 'gerada') lista = casos.filter(c => c.status === 'gerada');
+  else if (filtroFilaAtivo === 'aprovada') lista = casos.filter(c => c.status === 'aprovada');
+  else if (filtroFilaAtivo === 'protocolada') lista = casos.filter(c => c.status === 'protocolada');
+  else if (filtroFilaAtivo === 'protocolada_hoje') {
+    const hoje = new Date().toLocaleDateString('pt-BR').slice(0,8);
+    lista = casos.filter(c => c.status === 'protocolada' && c.protocolo?.data?.includes(hoje));
+  }
+
+  if (!lista.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="text-muted" style="text-align:center;padding:24px">Nenhum caso encontrado para este filtro.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = lista.map(c => {
+    const btnAcao = c.status === 'aprovada'
       ? `<button class="btn btn-success btn-sm" onclick="abrirProtocolo('${c.id}')">📤 Protocolar</button>`
-      : `<button class="btn btn-outline btn-sm" onclick="">Ver</button>`;
-    return `<tr>
-      <td><strong>${c.cliente.split(' - ')[0]}</strong><div class="text-muted">${c.cliente.split(' - ')[1] || ''}</div></td>
+      : `<button class="btn btn-outline btn-sm" onclick="abrirModalCaso('${c.id}')">Ver</button>`;
+    return `<tr onclick="abrirModalCaso('${c.id}')" style="cursor:pointer">
+      <td><strong>${c.cliente.split(' ').slice(0,3).join(' ')}</strong><div class="text-muted">${c.mes||''}</div></td>
       <td>${c.beneficio}</td>
       <td>${c.elaboradoPor}</td>
       <td>${c.dataElaboracao}</td>
-      <td><span class="status ${cls}"><span class="status-dot"></span>${lbl}</span></td>
-      <td class="text-muted">${c.protocolo?.data || '—'}</td>
-      <td>${btnProtocolo}</td>
+      <td><span class="status ${statusCls(c.status)}"><span class="status-dot"></span>${statusLabel(c.status)}</span></td>
+      <td class="text-muted" style="font-size:12px">${c.protocolo?.data||'—'}</td>
+      <td onclick="event.stopPropagation()">${btnAcao}</td>
     </tr>`;
   }).join('');
 }
 
 function renderAprovacoes() {
   const list = document.getElementById('aprovacoes-list');
-  const pendentes = casos.filter(c => c.status === 'aguardando_aprovacao' || c.status === 'reajuste');
-  if (!pendentes.length) { list.innerHTML = '<p class="text-muted">Nenhuma peça aguardando aprovação.</p>'; return; }
+  let pendentes;
+  if (filtroAprovAtivo === 'pendentes') pendentes = casos.filter(c => c.status === 'aguardando_aprovacao');
+  else if (filtroAprovAtivo === 'reajuste') pendentes = casos.filter(c => c.status === 'reajuste');
+  else if (filtroAprovAtivo === 'aprovadas') pendentes = casos.filter(c => c.status === 'aprovada');
+  else pendentes = casos;
+
+  if (!pendentes.length) { list.innerHTML = '<p class="text-muted">Nenhuma peça nesta categoria.</p>'; return; }
+
   list.innerHTML = pendentes.map(c => `
-    <div class="card mb-16">
-      <div class="card-title">📋 ${c.cliente.split(' - ')[0]} — ${c.beneficio}</div>
-      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
-        <span class="status ${c.status === 'reajuste' ? 's-reajuste' : 's-revisao'}"><span class="status-dot"></span>${c.status === 'reajuste' ? 'Reajuste realizado' : 'Aguardando aprovação'}</span>
-        <span class="text-muted">${c.elaboradoPor} · ${c.dataElaboracao}</span>
-      </div>
-      ${c.motivoReajuste ? `<div style="background:#FDF0E8;border:1px solid #F0C080;border-radius:var(--radius);padding:10px 14px;margin-bottom:12px;font-size:12px;"><strong style="color:var(--warning)">Motivo do reajuste:</strong> ${c.motivoReajuste}</div>` : ''}
-      ${c.alertas?.length ? `<div class="alert-block"><div class="alert-title">⚠️ Alertas do sistema</div>${c.alertas.map(a=>`<div class="alert-item"><span>•</span>${a}</div>`).join('')}</div>` : ''}
-      <div class="peca-viewer mt-16">
-        <div class="peca-toolbar">
-          <div class="peca-toolbar-left"><span style="font-size:13px;font-weight:500">📄 Peça para aprovação</span></div>
-          <div class="peca-toolbar-right">
-            <button class="btn btn-outline btn-sm" onclick="openModal('modal-instrucao')">📝 Instrução para Refazer</button>
-            <button class="btn btn-success btn-sm" onclick="aprovarCaso('${c.id}')">✅ Aprovar e Liberar Protocolo</button>
-          </div>
+    <div class="card mb-16" style="cursor:pointer" onclick="abrirModalCaso('${c.id}')">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <div style="flex:1">
+          <div style="font-size:15px;font-weight:600;color:var(--navy)">${c.cliente}</div>
+          <div class="text-muted" style="margin-top:2px">${c.beneficio} · ${c.elaboradoPor} · ${c.dataElaboracao}</div>
         </div>
-        <div class="peca-content" style="max-height:300px">${c.peca || ''}</div>
+        <span class="status ${statusCls(c.status)}"><span class="status-dot"></span>${statusLabel(c.status)}</span>
+        <span style="color:var(--gray-400)">›</span>
+      </div>
+      ${c.motivoReajuste ? `<div style="background:#FDF0E8;border-left:3px solid var(--warning);border-radius:var(--radius);padding:8px 12px;margin-top:10px;font-size:12px;color:var(--gray-800)"><strong style="color:var(--warning)">Reajuste:</strong> ${c.motivoReajuste}</div>` : ''}
+      ${c.alertas?.length ? `<div style="background:#FDF0E8;border-left:3px solid var(--warning);border-radius:var(--radius);padding:8px 12px;margin-top:8px;font-size:12px">⚠️ ${c.alertas.length} alerta(s) do sistema</div>` : ''}
+      <div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end" onclick="event.stopPropagation()">
+        ${['aguardando_aprovacao','reajuste'].includes(c.status) && currentUser?.role==='supervisor' ? `
+          <button class="btn btn-danger btn-sm" onclick="currentCasoId='${c.id}';openModal('modal-instrucao')">📝 Instrução p/ Refazer</button>
+          <button class="btn btn-success btn-sm" onclick="aprovarCaso('${c.id}')">✅ Aprovar</button>` : ''}
+        ${c.status==='aprovada' ? `<button class="btn btn-success btn-sm" onclick="abrirProtocolo('${c.id}')">📤 Protocolar</button>` : ''}
       </div>
     </div>`).join('');
 }
 
 function renderNotificacoes() {
   const list = document.getElementById('notif-list');
-  if (!notificacoes.length) { list.innerHTML = '<p class="text-muted">Sem notificações.</p>'; return; }
-  list.innerHTML = notificacoes.slice().reverse().map(n => `
-    <div class="notif-item ${n.lida ? '' : 'unread'}">
+  let lista = notificacoes.slice().reverse();
+  if (filtroNotifAtivo === 'nao_lidas') lista = lista.filter(n => !n.lida);
+  else if (filtroNotifAtivo === 'reajuste') lista = lista.filter(n => n.texto.toLowerCase().includes('reajuste'));
+  else if (filtroNotifAtivo === 'protocolo') lista = lista.filter(n => n.texto.toLowerCase().includes('protocolo') || n.texto.toLowerCase().includes('protocolado'));
+
+  if (!lista.length) { list.innerHTML = '<p class="text-muted">Nenhuma notificação nesta categoria.</p>'; return; }
+  list.innerHTML = lista.map(n => `
+    <div class="notif-item ${n.lida ? '' : 'unread'}" onclick="marcarLida('${n.id}')">
       <div class="notif-icon">${n.icone}</div>
-      <div>
+      <div style="flex:1">
         <div class="notif-title">${n.texto}</div>
         <div class="notif-meta">${n.por} · ${n.data}</div>
       </div>
+      ${!n.lida ? '<span style="width:8px;height:8px;border-radius:50%;background:var(--marsala);flex-shrink:0;margin-top:4px"></span>' : ''}
     </div>`).join('');
-  notificacoes.forEach(n => n.lida = true);
-  localStorage.setItem('cg_notifs', JSON.stringify(notificacoes));
 }
 
 function renderHistorico() {
   const log = document.getElementById('historico-log');
   if (!casos.length) { log.innerHTML = '<p class="text-muted">Nenhuma operação registrada.</p>'; return; }
-  const statusMap = { gerada:'s-gerada', aguardando_aprovacao:'s-revisao', aprovada:'s-aprovada', protocolada:'s-protocolada', reajuste:'s-reajuste' };
-  const labelMap = { gerada:'Gerada', aguardando_aprovacao:'Aguard. Aprovação', aprovada:'Aprovada', protocolada:'Protocolada', reajuste:'Em Reajuste' };
   log.innerHTML = casos.slice().reverse().map(c => `
-    <div class="log-row">
+    <div class="log-row" style="cursor:pointer" onclick="abrirModalCaso('${c.id}')">
       <div class="log-time">${c.dataElaboracao}</div>
       <div class="log-user">${c.elaboradoPor}</div>
-      <div class="log-action">Peça gerada — ${c.cliente.split(' - ')[0]}</div>
-      <div><span class="status ${statusMap[c.status] || 's-gerada'}" style="font-size:10px"><span class="status-dot"></span>${labelMap[c.status] || c.status}</span></div>
+      <div class="log-action">${c.cliente.split(' ').slice(0,3).join(' ')} — ${c.beneficio}</div>
+      <div><span class="status ${statusCls(c.status)}" style="font-size:10px"><span class="status-dot"></span>${statusLabel(c.status)}</span></div>
     </div>
     ${c.protocolo ? `<div class="log-row">
       <div class="log-time">${c.protocolo.data}</div>
       <div class="log-user">${c.protocolo.por}</div>
-      <div class="log-action">Protocolado no INSS — ${c.cliente.split(' - ')[0]}${c.protocolo.numero ? ' · Nº ' + c.protocolo.numero : ''}</div>
+      <div class="log-action">Protocolado — ${c.cliente.split(' ').slice(0,3).join(' ')}${c.protocolo.numero?' · Nº '+c.protocolo.numero:''}</div>
       <div><span class="status s-protocolada" style="font-size:10px"><span class="status-dot"></span>Protocolada</span></div>
-    </div>` : ''}
-  `).join('');
+    </div>` : ''}`).join('');
 }
 
-function refreshDashboard() {
-  document.getElementById('stat-aprov').textContent = casos.filter(c => c.status === 'aguardando_aprovacao').length;
-  document.getElementById('stat-elab').textContent = casos.filter(c => c.status === 'gerada').length;
-  document.getElementById('stat-prot').textContent = casos.filter(c => c.status === 'protocolada' && c.protocolo?.data?.includes(new Date().toLocaleDateString('pt-BR').slice(0,8))).length;
-  document.getElementById('stat-mes').textContent = casos.length;
-  atualizarBadges();
+function marcarLida(id) {
+  const n = notificacoes.find(x => x.id === id);
+  if (n) { n.lida = true; localStorage.setItem('cg_notifs', JSON.stringify(notificacoes)); atualizarBadges(); }
 }
 
 function atualizarBadges() {
@@ -1442,7 +1805,13 @@ function salvarCasos() {
 
 function addNotificacao(texto, por) {
   const icones = { sistema:'📄', 'Dra. Jucineide':'✅' };
-  notificacoes.push({ texto, por, data: new Date().toLocaleString('pt-BR'), icone: icones[por] || '🔔', lida: false });
+  notificacoes.push({
+    id: Date.now().toString(),
+    texto, por,
+    data: new Date().toLocaleString('pt-BR'),
+    icone: icones[por] || '🔔',
+    lida: false
+  });
   localStorage.setItem('cg_notifs', JSON.stringify(notificacoes));
   atualizarBadges();
 }
