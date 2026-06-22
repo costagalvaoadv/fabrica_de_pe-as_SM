@@ -94,9 +94,9 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--gr
 .badge-count { margin-left:auto; background:var(--marsala); color:var(--white); font-size:10px; font-weight:600; padding:2px 6px; border-radius:10px; min-width:18px; text-align:center; }
 
 /* CONTENT */
-.content { flex:1; padding:32px; overflow-y:auto; }
-.page { display:none; }
-.page.active { display:block; }
+.content { flex:1; padding:32px; overflow-y:auto; min-width:0; position:relative; }
+.page { display:none; width:100%; }
+.page.active { display:block; width:100%; }
 .page-header { margin-bottom:28px; }
 .page-title { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:600; color:var(--navy); margin-bottom:4px; }
 .page-subtitle { font-size:13px; color:var(--gray-400); }
@@ -454,15 +454,6 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--gr
           <div class="page-subtitle" id="dash-date"></div>
         </div>
 
-                  <div class="cred-banner-text">
-            <strong>Configuração necessária antes do primeiro uso:</strong><br>
-            Preencha as credenciais no bloco <code>CONFIG</code> no topo do arquivo HTML:
-            Google Client ID, API Key, Claude API Key e ID da pasta raiz no Drive.
-            Após publicar no GitHub Pages, autorize o domínio no Google Console.
-          </div>
-          <a href="https://drive.google.com/drive/folders" target="_blank" class="btn btn-gold btn-sm">📂 Abrir Google Drive</a>
-        </div>
-
         <div class="stats-row">
           <div class="stat-card c1 stat-clickable" onclick="filtrarFilaPor('aguardando_aprovacao')" title="Ver peças aguardando aprovação">
             <div class="stat-label">Aguardando Aprovação</div>
@@ -542,10 +533,10 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--gr
             <div class="form-group">
               <label>Nome da Cliente</label>
               <div style="display:flex;gap:10px;align-items:flex-start">
-                <div style="flex:1">
+                <div style="flex:1;position:relative">
                   <input type="text" id="campo-nome" placeholder="Digite o nome completo ou selecione abaixo..." oninput="filtrarClientes()" autocomplete="off"/>
                   <!-- Dropdown de sugestões -->
-                  <div id="sugestoes-lista" style="display:none;position:absolute;z-index:50;background:var(--white);border:1.5px solid var(--marsala);border-radius:0 0 var(--radius) var(--radius);max-height:200px;overflow-y:auto;width:calc(50% - 48px)"></div>
+                  <div id="sugestoes-lista" style="display:none;position:absolute;z-index:100;background:var(--white);border:1.5px solid var(--marsala);border-radius:0 0 var(--radius) var(--radius);max-height:200px;overflow-y:auto;width:100%;top:100%;left:0;box-shadow:var(--shadow-md)"></div>
                 </div>
               </div>
             </div>
@@ -994,18 +985,40 @@ function setupUI() {
   document.getElementById('top-role').className = 'role-tag ' + (currentUser.role === 'supervisor' ? 'role-supervisor' : 'role-operacional');
   document.getElementById('nav-supervisor-section').style.display = currentUser.role === 'supervisor' ? 'block' : 'none';
   document.getElementById('dash-date').textContent = new Date().toLocaleDateString('pt-BR', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+  // Garante que todas as páginas começam ocultas exceto dashboard
+  document.querySelectorAll('.page').forEach(p => {
+    p.style.display = 'none';
+    p.classList.remove('active');
+  });
+  const dash = document.getElementById('page-dashboard');
+  if (dash) { dash.style.display = 'block'; dash.classList.add('active'); }
 }
 
 // ════════════════════════════════════════
 //  NAVIGATION
 // ════════════════════════════════════════
 function showPage(id) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => {
+    p.classList.remove('active');
+    p.style.display = 'none';
+  });
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('page-' + id).classList.add('active');
+
+  const target = document.getElementById('page-' + id);
+  if (target) {
+    target.classList.add('active');
+    target.style.display = 'block';
+  }
+
   const map = { dashboard:0, 'novo-caso':1, fila:2, aprovacoes:3, notificacoes:4, historico:5 };
   const items = document.querySelectorAll('.nav-item');
   if (map[id] !== undefined) items[map[id]]?.classList.add('active');
+
+  // Scroll ao topo
+  const content = document.querySelector('.content');
+  if (content) content.scrollTop = 0;
+
   if (id === 'fila') renderFila();
   if (id === 'aprovacoes') renderAprovacoes();
   if (id === 'notificacoes') renderNotificacoes();
@@ -1604,12 +1617,22 @@ function renderDashNotifs() {
 // ════════════════════════════════════════
 function filtrarFilaPor(filtro, el) {
   filtroFilaAtivo = filtro;
-  // Atualiza chip ativo na fila
   if (el) {
     document.querySelectorAll('.fila-stat').forEach(f => f.classList.remove('ativo'));
     el.classList.add('ativo');
   }
-  showPage('fila');
+  // Se veio do dashboard (sem el), navega para fila e aplica filtro
+  if (!el) {
+    // Seleciona o chip correto na fila
+    showPage('fila');
+    // Após render, ativa o chip correspondente
+    const chips = document.querySelectorAll('.fila-stat');
+    const mapa = { todos:0, aguardando_aprovacao:1, aprovada:2, protocolada:3, protocolada_hoje:3 };
+    if (chips[mapa[filtro]]) {
+      chips.forEach(c => c.classList.remove('ativo'));
+      chips[mapa[filtro]].classList.add('ativo');
+    }
+  }
   renderFila();
 }
 
