@@ -220,6 +220,43 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--gr
 .cred-banner-text { flex:1; font-size:13px; line-height:1.6; }
 .cred-banner-text strong { color:var(--gold-light); }
 
+/* UPLOAD ZONES */
+.upload-zone {
+  border:2px dashed var(--gray-200);
+  border-radius:var(--radius-lg);
+  padding:24px 16px;
+  text-align:center;
+  cursor:pointer;
+  transition:all 0.2s;
+  background:var(--gray-100);
+  min-height:110px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+}
+.upload-zone:hover { border-color:var(--marsala); background:var(--white); }
+.upload-zone.dragover { border-color:var(--gold); background:var(--gold-pale); }
+.upload-zone.has-files { border-color:var(--success); background:#F0FAF5; border-style:solid; }
+.upload-icon { font-size:28px; margin-bottom:6px; }
+.upload-label { font-size:12px; font-weight:600; color:var(--gray-800); margin-bottom:3px; }
+.upload-hint { font-size:11px; color:var(--gray-400); }
+.upload-lista { margin-top:8px; }
+.upload-file-item {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 10px;
+  background:var(--white);
+  border:1px solid var(--gray-200);
+  border-radius:var(--radius);
+  margin-top:6px;
+  font-size:12px;
+}
+.upload-file-name { flex:1; color:var(--gray-800); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:140px; }
+.upload-file-size { color:var(--gray-400); font-size:11px; flex-shrink:0; }
+.upload-file-remove { background:none; border:none; cursor:pointer; color:var(--marsala); font-size:14px; flex-shrink:0; padding:0; }
+
 @media (max-width:768px) {
   .stats-row { grid-template-columns:repeat(2,1fr); }
   .sidebar { display:none; }
@@ -346,16 +383,13 @@ const CONFIG = {
           <div class="page-subtitle" id="dash-date"></div>
         </div>
 
-        <!-- Banner de configuração -->
-        <div class="cred-banner" id="config-banner">
-          <div style="font-size:28px">⚙️</div>
-          <div class="cred-banner-text">
+                  <div class="cred-banner-text">
             <strong>Configuração necessária antes do primeiro uso:</strong><br>
             Preencha as credenciais no bloco <code>CONFIG</code> no topo do arquivo HTML:
             Google Client ID, API Key, Claude API Key e ID da pasta raiz no Drive.
             Após publicar no GitHub Pages, autorize o domínio no Google Console.
           </div>
-          <button class="btn btn-gold btn-sm" onclick="connectDrive()">🔗 Conectar Google Drive</button>
+          <a href="https://drive.google.com/drive/folders" target="_blank" class="btn btn-gold btn-sm">📂 Abrir Google Drive</a>
         </div>
 
         <div class="stats-row">
@@ -381,52 +415,128 @@ const CONFIG = {
       <div class="page" id="page-novo-caso">
         <div class="page-header">
           <div class="page-title">Novo Caso</div>
-          <div class="page-subtitle">Selecione a pasta da cliente no Google Drive</div>
+          <div class="page-subtitle">Identifique a cliente e faça o upload dos documentos</div>
         </div>
 
-        <!-- STEP 1: Selecionar mês/pasta -->
+        <!-- STEP 1: IDENTIFICAÇÃO + UPLOAD -->
         <div id="step-drive">
-          <div class="card">
-            <div class="card-title">📂 Google Drive — Costa Galvão Advocacia</div>
 
-            <div class="drive-path" id="drive-breadcrumb">
-              <span class="drive-crumb">Costa Galvão Advocacia</span>
-              <span class="drive-sep">›</span>
-              <span class="drive-crumb">Setor Comercial</span>
-              <span class="drive-sep">›</span>
-              <span class="drive-crumb">Contratos Previdenciários Fechados</span>
-              <span class="drive-sep">›</span>
-              <span class="drive-crumb">2026</span>
-              <span class="drive-sep">›</span>
-              <span style="color:var(--gray-400)" id="crumb-mes">Selecione o mês</span>
-            </div>
+          <!-- IDENTIFICAÇÃO DA CLIENTE -->
+          <div class="card mb-16">
+            <div class="card-title">👤 Identificação da Cliente</div>
 
-            <!-- Seleção de mês -->
-            <div id="mes-selector" class="mb-16">
-              <div style="font-size:12px;color:var(--gray-400);margin-bottom:10px">Selecione o mês:</div>
-              <div class="folder-grid" id="mes-grid"></div>
-            </div>
-
-            <!-- Lista de clientes do mês -->
-            <div id="clientes-sector" style="display:none">
-              <div style="font-size:12px;color:var(--gray-400);margin-bottom:10px">Selecione a pasta da cliente:</div>
-              <div id="loading-folders" style="display:none;text-align:center;padding:20px;color:var(--gray-400)">
-                <div class="spinner" style="border-top-color:var(--marsala);margin:0 auto 8px"></div>
-                Carregando pastas do Drive...
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+              <div class="form-group" style="margin:0">
+                <label>Mês de Referência</label>
+                <select id="campo-mes" onchange="atualizarClientesMes()">
+                  <option value="">Selecione o mês...</option>
+                  <option>JANEIRO/26</option><option>FEVEREIRO/26</option><option>MARÇO/26</option>
+                  <option>ABRIL/26</option><option>MAIO/26</option><option selected>JUNHO/26</option>
+                  <option>JULHO/26</option><option>AGOSTO/26</option><option>SETEMBRO/26</option>
+                  <option>OUTUBRO/26</option><option>NOVEMBRO/26</option><option>DEZEMBRO/26</option>
+                </select>
               </div>
-              <div class="folder-grid" id="clientes-grid"></div>
-              <div id="selected-info" style="display:none" class="mt-16">
-                <div style="background:var(--gold-pale);border:1px solid var(--gold);border-radius:var(--radius);padding:12px 16px;font-size:13px;">
-                  <strong style="color:var(--gold)">📂 Selecionada:</strong>
-                  <div id="selected-name" style="color:var(--navy);margin-top:4px;font-size:12px;font-weight:500"></div>
-                  <div id="selected-docs-preview" style="margin-top:8px"></div>
+              <div class="form-group" style="margin:0">
+                <label>Benefício</label>
+                <select id="campo-beneficio">
+                  <option>Salário-Maternidade</option>
+                  <option>BPC/LOAS</option>
+                  <option>Auxílio Acidente</option>
+                  <option>Aposentadoria</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Seleção ou digitação do nome -->
+            <div class="form-group">
+              <label>Nome da Cliente</label>
+              <div style="display:flex;gap:10px;align-items:flex-start">
+                <div style="flex:1">
+                  <input type="text" id="campo-nome" placeholder="Digite o nome completo ou selecione abaixo..." oninput="filtrarClientes()" autocomplete="off"/>
+                  <!-- Dropdown de sugestões -->
+                  <div id="sugestoes-lista" style="display:none;position:absolute;z-index:50;background:var(--white);border:1.5px solid var(--marsala);border-radius:0 0 var(--radius) var(--radius);max-height:200px;overflow-y:auto;width:calc(50% - 48px)"></div>
                 </div>
-                <div class="mt-16" style="display:flex;gap:10px;justify-content:flex-end">
-                  <button class="btn btn-outline btn-sm" onclick="clearSelection()">Cancelar</button>
+              </div>
+            </div>
+
+            <!-- Clientes já cadastradas no mês -->
+            <div id="clientes-mes-sector" style="display:none">
+              <div style="font-size:11px;color:var(--gray-400);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">Clientes deste mês — clique para selecionar</div>
+              <div id="clientes-mes-grid" class="folder-grid"></div>
+            </div>
+
+            <!-- Preview da selecionada -->
+            <div id="cliente-selecionada-info" style="display:none;margin-top:12px">
+              <div style="background:var(--gold-pale);border:1px solid var(--gold);border-radius:var(--radius);padding:10px 14px;font-size:13px;display:flex;align-items:center;gap:10px">
+                <span>✅</span>
+                <div>
+                  <strong style="color:var(--navy)" id="preview-nome-cliente"></strong>
+                  <span class="text-muted" id="preview-mes-cliente"></span>
+                </div>
+                <button class="btn btn-outline btn-sm" style="margin-left:auto" onclick="limparCliente()">Limpar</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- UPLOAD DE DOCUMENTOS -->
+          <div class="card">
+            <div class="card-title">📎 Upload de Documentos</div>
+            <p style="font-size:12px;color:var(--gray-400);margin-bottom:20px">Baixe os arquivos do Google Drive e faça o upload aqui. O sistema aceita PDF e imagens.</p>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">
+
+              <!-- Documentos Pessoais -->
+              <div>
+                <div style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--navy);margin-bottom:10px">📋 Documentos Pessoais</div>
+                <div class="upload-zone" id="zone-pessoais" onclick="triggerUpload('upload-pessoais')" ondragover="dragOver(event)" ondrop="dropFiles(event,'pessoais')">
+                  <div class="upload-icon">🪪</div>
+                  <div class="upload-label">RG, CPF</div>
+                  <div class="upload-hint">Clique ou arraste os arquivos</div>
+                </div>
+                <input type="file" id="upload-pessoais" multiple accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="receberArquivos(this,'pessoais')"/>
+                <div id="lista-pessoais" class="upload-lista"></div>
+              </div>
+
+              <!-- Documentos de Representação -->
+              <div>
+                <div style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--navy);margin-bottom:10px">📜 Representação</div>
+                <div class="upload-zone" id="zone-representacao" onclick="triggerUpload('upload-representacao')" ondragover="dragOver(event)" ondrop="dropFiles(event,'representacao')">
+                  <div class="upload-icon">✍️</div>
+                  <div class="upload-label">Procuração, Contrato</div>
+                  <div class="upload-hint">Clique ou arraste os arquivos</div>
+                </div>
+                <input type="file" id="upload-representacao" multiple accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="receberArquivos(this,'representacao')"/>
+                <div id="lista-representacao" class="upload-lista"></div>
+              </div>
+
+              <!-- Outros Documentos -->
+              <div>
+                <div style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--navy);margin-bottom:10px">📂 Outros Documentos</div>
+                <div class="upload-zone" id="zone-outros" onclick="triggerUpload('upload-outros')" ondragover="dragOver(event)" ondrop="dropFiles(event,'outros')">
+                  <div class="upload-icon">📄</div>
+                  <div class="upload-label">CNIS, Certidão, GPS</div>
+                  <div class="upload-hint">Clique ou arraste os arquivos</div>
+                </div>
+                <input type="file" id="upload-outros" multiple accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="receberArquivos(this,'outros')"/>
+                <div id="lista-outros" class="upload-lista"></div>
+              </div>
+
+            </div>
+
+            <!-- Resumo e botão gerar -->
+            <div id="resumo-upload" style="display:none;margin-top:20px">
+              <div style="background:var(--gray-100);border-radius:var(--radius);padding:14px 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+                <div style="font-size:13px;color:var(--gray-800)">
+                  <strong id="resumo-total">0</strong> arquivo(s) carregado(s)
+                  <span class="text-muted" id="resumo-detalhe"></span>
+                </div>
+                <div style="margin-left:auto;display:flex;gap:10px">
+                  <button class="btn btn-outline btn-sm" onclick="limparTodosArquivos()">🗑️ Limpar tudo</button>
                   <button class="btn btn-primary" id="btn-gerar" onclick="startProcessing()">🤖 Gerar Peça Automaticamente</button>
                 </div>
               </div>
             </div>
+
           </div>
         </div>
 
@@ -435,11 +545,11 @@ const CONFIG = {
           <div class="processing-card">
             <div class="processing-title">Analisando documentos...</div>
             <div class="processing-sub" id="proc-cliente-name"></div>
-            <ul class="processing-steps" id="proc-steps-list">
-              <li class="proc-step" id="ps1"><span class="step-icon">📂</span>Acessando pasta no Google Drive</li>
-              <li class="proc-step" id="ps2"><span class="step-icon">📄</span>Lendo CNIS e documentos pessoais</li>
+            <ul class="processing-steps">
+              <li class="proc-step" id="ps1"><span class="step-icon">📄</span>Lendo documentos enviados</li>
+              <li class="proc-step" id="ps2"><span class="step-icon">🔍</span>Extraindo dados: CNIS, qualificação, certidão</li>
               <li class="proc-step" id="ps3"><span class="step-icon">⚖️</span>Identificando categoria e tese jurídica</li>
-              <li class="proc-step" id="ps4"><span class="step-icon">🔍</span>Validando datas e tempestividade</li>
+              <li class="proc-step" id="ps4"><span class="step-icon">📅</span>Validando datas e tempestividade</li>
               <li class="proc-step" id="ps5"><span class="step-icon">🧠</span>Elaborando requerimento (IA jurídica)</li>
               <li class="proc-step" id="ps6"><span class="step-icon">📑</span>Aplicando papel timbrado</li>
               <li class="proc-step" id="ps7"><span class="step-icon">✅</span>Peça pronta para revisão</li>
@@ -609,7 +719,7 @@ const CONFIG = {
 // ════════════════════════════════════════
 let currentUser = null;
 let driveToken = null;
-let selectedFolder = null; // { id, name }
+let nomeCliente = ""; // { id, name }
 let selectedMes = null;
 let currentPecaText = '';
 let currentCasoId = null;
@@ -639,7 +749,7 @@ function doLogin() {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app').style.display = 'flex';
     refreshDashboard();
-    initMesSelector();
+    
   } else {
     err.style.display = 'block';
   }
@@ -702,190 +812,203 @@ function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
 // ════════════════════════════════════════
-//  GOOGLE DRIVE
 // ════════════════════════════════════════
-function connectDrive() {
-  if (CONFIG.GOOGLE_CLIENT_ID === 'SEU_CLIENT_ID_AQUI.apps.googleusercontent.com') {
-    alert('⚙️ Configure as credenciais no bloco CONFIG antes de conectar o Google Drive.\n\nConsulte os comentários no topo do arquivo HTML.');
-    return;
-  }
-  const client = google.accounts.oauth2.initTokenClient({
-    client_id: CONFIG.GOOGLE_CLIENT_ID,
-    scope: 'https://www.googleapis.com/auth/drive.readonly',
-    callback: (resp) => {
-      if (resp.access_token) {
-        driveToken = resp.access_token;
-        document.getElementById('drive-status').style.display = 'flex';
-        document.getElementById('drive-status-icon').textContent = '🟢';
-        document.getElementById('drive-status-text').textContent = 'Drive conectado';
-        document.getElementById('config-banner').style.display = 'none';
-      }
-    }
-  });
-  client.requestAccessToken();
-}
-
-async function listDriveFolders(parentId) {
-  if (!driveToken) return [];
-  const res = await fetch(
-    `https://www.googleapis.com/drive/v3/files?q='${parentId}'+in+parents+and+mimeType='application/vnd.google-apps.folder'+and+trashed=false&fields=files(id,name)&orderBy=name`,
-    { headers: { Authorization: `Bearer ${driveToken}` } }
-  );
-  const data = await res.json();
-  return data.files || [];
-}
-
-async function findFolderByName(parentId, name) {
-  if (!driveToken) return null;
-  const res = await fetch(
-    `https://www.googleapis.com/auth/drive/v3/files?q='${parentId}'+in+parents+and+name='${encodeURIComponent(name)}'+and+mimeType='application/vnd.google-apps.folder'&fields=files(id,name)`,
-    { headers: { Authorization: `Bearer ${driveToken}` } }
-  );
-  const data = await res.json();
-  return data.files?.[0] || null;
-}
-
-async function listDriveFiles(folderId) {
-  if (!driveToken) return [];
-  const res = await fetch(
-    `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+trashed=false&fields=files(id,name,mimeType,size)`,
-    { headers: { Authorization: `Bearer ${driveToken}` } }
-  );
-  const data = await res.json();
-  return data.files || [];
-}
-
-async function getDriveFileBase64(fileId, mimeType) {
-  // Para PDFs usa export; para imagens usa direto
-  const url = mimeType === 'application/vnd.google-apps.document'
-    ? `https://www.googleapis.com/drive/v3/files/${fileId}/export?mimeType=application/pdf`
-    : `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`;
-  const res = await fetch(url, { headers: { Authorization: `Bearer ${driveToken}` } });
-  const blob = await res.blob();
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result.split(',')[1]);
-    reader.readAsDataURL(blob);
-  });
-}
-
+//  UPLOAD MANUAL DE ARQUIVOS
 // ════════════════════════════════════════
-//  SELETOR DE MÊS E CLIENTES
-// ════════════════════════════════════════
-function initMesSelector() {
-  const grid = document.getElementById('mes-grid');
-  grid.innerHTML = '';
-  MESES.forEach(mes => {
-    const el = document.createElement('div');
-    el.className = 'folder-item';
-    el.innerHTML = `<span class="folder-icon">📅</span><span>${mes}</span>`;
-    el.onclick = () => selectMes(mes, el);
-    grid.appendChild(el);
-  });
-}
+let arquivos = { pessoais: [], representacao: [], outros: [] };
+let nomeCliente = '';
 
-async function selectMes(mes, el) {
-  document.querySelectorAll('#mes-grid .folder-item').forEach(f => f.classList.remove('selected'));
-  el.classList.add('selected');
-  selectedMes = mes;
-  document.getElementById('crumb-mes').textContent = mes;
+// Banco local de clientes por mês
+let clientesPorMes = JSON.parse(localStorage.getItem('cg_clientes') || '{}');
 
-  document.getElementById('clientes-sector').style.display = 'block';
-  document.getElementById('loading-folders').style.display = 'block';
-  document.getElementById('clientes-grid').innerHTML = '';
-
-  if (!driveToken) {
-    // Sem Drive conectado: mostra pasta de exemplo
-    document.getElementById('loading-folders').style.display = 'none';
-    renderClientesMock();
-    return;
-  }
-
-  try {
-    // Navega pela estrutura do Drive
-    const ano2026 = await findFolderByName(CONFIG.ROOT_FOLDER_ID, '2026');
-    if (!ano2026) throw new Error('Pasta 2026 não encontrada');
-    const mesPasta = await findFolderByName(ano2026.id, mes);
-    if (!mesPasta) throw new Error(`Pasta ${mes} não encontrada`);
-    const clientes = await listDriveFolders(mesPasta.id);
-    document.getElementById('loading-folders').style.display = 'none';
-    renderClientesGrid(clientes, mesPasta.id);
-  } catch(e) {
-    document.getElementById('loading-folders').style.display = 'none';
-    document.getElementById('clientes-grid').innerHTML = `<p style="color:var(--marsala);font-size:13px">Erro ao carregar pastas: ${e.message}</p>`;
-  }
-}
-
-function renderClientesMock() {
-  // Fallback sem Drive conectado
-  const clientes = [
-    { id: 'mock1', name: 'VANESSA APARECIDA DA ROCHA - 40348076878 - SALÁRIO MATERNIDADE' },
-    { id: 'mock2', name: 'NAELY CLEMENTE LOPES - 71926573447 - SALÁRIO MATERNIDADE' },
-  ];
-  renderClientesGrid(clientes, null);
-}
-
-function renderClientesGrid(clientes, parentId) {
-  const grid = document.getElementById('clientes-grid');
-  grid.innerHTML = '';
-  if (!clientes.length) {
-    grid.innerHTML = '<p class="text-muted">Nenhuma pasta encontrada neste mês.</p>';
-    return;
-  }
-  clientes.forEach(c => {
-    const parts = c.name.split(' - ');
-    const nome = parts[0] || c.name;
-    const cpf = parts[1] || '';
-    const beneficio = parts[2] || '';
-    const el = document.createElement('div');
-    el.className = 'folder-item';
-    el.innerHTML = `<span class="folder-icon">📁</span><div><div style="font-size:12px;font-weight:500">${nome}</div><div class="text-muted">${cpf}${beneficio ? ' · ' + beneficio : ''}</div></div>`;
-    el.onclick = () => selectCliente(c, el, parentId);
-    grid.appendChild(el);
-  });
-}
-
-async function selectCliente(folder, el, parentId) {
-  document.querySelectorAll('#clientes-grid .folder-item').forEach(f => f.classList.remove('selected'));
-  el.classList.add('selected');
-  selectedFolder = folder;
-
-  document.getElementById('selected-name').textContent = folder.name;
-  document.getElementById('selected-info').style.display = 'block';
-
-  // Preview dos documentos encontrados
-  if (driveToken && folder.id !== 'mock1' && folder.id !== 'mock2') {
-    const subfolders = await listDriveFolders(folder.id);
-    let docCount = 0;
-    const preview = [];
-    for (const sub of subfolders) {
-      const files = await listDriveFiles(sub.id);
-      docCount += files.length;
-      if (files.length) preview.push(`${sub.name}: ${files.length} arquivo(s)`);
-    }
-    document.getElementById('selected-docs-preview').innerHTML =
-      preview.map(p => `<div class="text-muted" style="font-size:11px">• ${p}</div>`).join('');
+function atualizarClientesMes() {
+  const mes = document.getElementById('campo-mes').value;
+  if (!mes) { document.getElementById('clientes-mes-sector').style.display = 'none'; return; }
+  const lista = clientesPorMes[mes] || [];
+  const grid = document.getElementById('clientes-mes-grid');
+  if (lista.length) {
+    grid.innerHTML = lista.map(c => `
+      <div class="folder-item" onclick="selecionarClienteLista('${c.nome}','${c.beneficio}',this)">
+        <span class="folder-icon">👤</span>
+        <div>
+          <div style="font-size:12px;font-weight:500">${c.nome.split(' ').slice(0,3).join(' ')}</div>
+          <div class="text-muted">${c.beneficio}</div>
+        </div>
+      </div>`).join('');
+    document.getElementById('clientes-mes-sector').style.display = 'block';
   } else {
-    document.getElementById('selected-docs-preview').innerHTML =
-      '<div class="text-muted" style="font-size:11px">• Documentos Pessoais, Representação e Outros Documentos</div>';
+    document.getElementById('clientes-mes-sector').style.display = 'none';
   }
 }
 
-function clearSelection() {
-  selectedFolder = null;
-  document.querySelectorAll('.folder-item').forEach(f => f.classList.remove('selected'));
-  document.getElementById('selected-info').style.display = 'none';
+function filtrarClientes() {
+  const val = document.getElementById('campo-nome').value.trim().toUpperCase();
+  const mes = document.getElementById('campo-mes').value;
+  const lista = (clientesPorMes[mes] || []).filter(c => c.nome.toUpperCase().includes(val));
+  const sug = document.getElementById('sugestoes-lista');
+  if (val.length < 2 || !lista.length) { sug.style.display = 'none'; return; }
+  sug.innerHTML = lista.map(c => `
+    <div onclick="selecionarClienteSugestao('${c.nome}','${c.beneficio}')"
+         style="padding:10px 14px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--gray-100)"
+         onmouseover="this.style.background='var(--gray-100)'" onmouseout="this.style.background=''">
+      ${c.nome} <span class="text-muted">· ${c.beneficio}</span>
+    </div>`).join('');
+  sug.style.display = 'block';
 }
 
+function selecionarClienteSugestao(nome, beneficio) {
+  document.getElementById('campo-nome').value = nome;
+  document.getElementById('campo-beneficio').value = beneficio;
+  document.getElementById('sugestoes-lista').style.display = 'none';
+  confirmarCliente(nome);
+}
+
+function selecionarClienteLista(nome, beneficio, el) {
+  document.querySelectorAll('#clientes-mes-grid .folder-item').forEach(f => f.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('campo-nome').value = nome;
+  document.getElementById('campo-beneficio').value = beneficio;
+  confirmarCliente(nome);
+}
+
+function confirmarCliente(nome) {
+  nomeCliente = nome.trim().toUpperCase();
+  const mes = document.getElementById('campo-mes').value;
+  const beneficio = document.getElementById('campo-beneficio').value;
+  document.getElementById('preview-nome-cliente').textContent = nomeCliente;
+  document.getElementById('preview-mes-cliente').textContent = mes ? ' · ' + mes : '';
+  document.getElementById('cliente-selecionada-info').style.display = 'block';
+  // Persiste no banco local
+  if (mes && nomeCliente) {
+    if (!clientesPorMes[mes]) clientesPorMes[mes] = [];
+    if (!clientesPorMes[mes].find(c => c.nome === nomeCliente)) {
+      clientesPorMes[mes].push({ nome: nomeCliente, beneficio });
+      localStorage.setItem('cg_clientes', JSON.stringify(clientesPorMes));
+    }
+  }
+}
+
+function limparCliente() {
+  nomeCliente = '';
+  document.getElementById('campo-nome').value = '';
+  document.getElementById('cliente-selecionada-info').style.display = 'none';
+  document.querySelectorAll('#clientes-mes-grid .folder-item').forEach(f => f.classList.remove('selected'));
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('#campo-nome') && !e.target.closest('#sugestoes-lista')) {
+    document.getElementById('sugestoes-lista').style.display = 'none';
+    const val = document.getElementById('campo-nome').value.trim();
+    if (val && !nomeCliente) confirmarCliente(val);
+  }
+});
+
+// ── ZONAS DE UPLOAD ──
+function triggerUpload(id) { document.getElementById(id).click(); }
+
+function dragOver(e) {
+  e.preventDefault();
+  e.currentTarget.classList.add('dragover');
+}
+
+function dropFiles(e, categoria) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('dragover');
+  const files = Array.from(e.dataTransfer.files).filter(f => f.type.includes('pdf') || f.type.includes('image'));
+  adicionarArquivos(files, categoria);
+}
+
+function receberArquivos(input, categoria) {
+  adicionarArquivos(Array.from(input.files), categoria);
+  input.value = '';
+}
+
+function adicionarArquivos(files, categoria) {
+  files.forEach(file => {
+    if (!arquivos[categoria].find(f => f.name === file.name)) arquivos[categoria].push(file);
+  });
+  renderListaArquivos(categoria);
+  atualizarResumoUpload();
+}
+
+function removerArquivo(categoria, nome) {
+  arquivos[categoria] = arquivos[categoria].filter(f => f.name !== nome);
+  renderListaArquivos(categoria);
+  atualizarResumoUpload();
+}
+
+function renderListaArquivos(categoria) {
+  const lista = document.getElementById('lista-' + categoria);
+  const zone = document.getElementById('zone-' + categoria);
+  const files = arquivos[categoria];
+  zone.classList.toggle('has-files', files.length > 0);
+  lista.innerHTML = files.map(f => `
+    <div class="upload-file-item">
+      <span>${f.type.includes('pdf') ? '📄' : '🖼️'}</span>
+      <span class="upload-file-name" title="${f.name}">${f.name}</span>
+      <span class="upload-file-size">${(f.size/1024).toFixed(0)}kb</span>
+      <button class="upload-file-remove" onclick="removerArquivo('${categoria}','${f.name}')" title="Remover">×</button>
+    </div>`).join('');
+}
+
+function atualizarResumoUpload() {
+  const total = arquivos.pessoais.length + arquivos.representacao.length + arquivos.outros.length;
+  const resumo = document.getElementById('resumo-upload');
+  if (total > 0) {
+    document.getElementById('resumo-total').textContent = total;
+    document.getElementById('resumo-detalhe').textContent =
+      ` (${arquivos.pessoais.length} pessoais · ${arquivos.representacao.length} representação · ${arquivos.outros.length} outros)`;
+    resumo.style.display = 'block';
+  } else {
+    resumo.style.display = 'none';
+  }
+}
+
+function limparTodosArquivos() {
+  arquivos = { pessoais: [], representacao: [], outros: [] };
+  ['pessoais','representacao','outros'].forEach(c => renderListaArquivos(c));
+  atualizarResumoUpload();
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function coletarDocumentos() {
+  const todos = [
+    ...arquivos.pessoais.map(f => ({ file: f, categoria: 'DOCUMENTOS PESSOAIS' })),
+    ...arquivos.representacao.map(f => ({ file: f, categoria: 'DOCUMENTOS DE REPRESENTAÇÃO' })),
+    ...arquivos.outros.map(f => ({ file: f, categoria: 'OUTROS DOCUMENTOS' })),
+  ];
+  const resultado = [];
+  for (const item of todos) {
+    const b64 = await fileToBase64(item.file);
+    resultado.push({ nome: item.file.name, categoria: item.categoria, mimeType: item.file.type, base64: b64 });
+  }
+  return resultado;
+}
+
+
 // ════════════════════════════════════════
-//  PROCESSAMENTO E GERAÇÃO VIA CLAUDE API
+//  PROCESSAMENTO
 // ════════════════════════════════════════
 async function startProcessing() {
-  if (!selectedFolder) return;
+  // Validações
+  const nome = document.getElementById('campo-nome').value.trim();
+  if (!nome) { alert('Informe o nome da cliente antes de gerar a peça.'); return; }
+  const total = arquivos.pessoais.length + arquivos.representacao.length + arquivos.outros.length;
+  if (total === 0) { alert('Faça o upload de pelo menos um documento antes de gerar a peça.'); return; }
+
+  if (!nomeCliente) confirmarCliente(nome);
 
   document.getElementById('step-drive').style.display = 'none';
   document.getElementById('step-processing').style.display = 'block';
-  document.getElementById('proc-cliente-name').textContent = selectedFolder.name;
+  document.getElementById('proc-cliente-name').textContent = nomeCliente;
 
   const steps = ['ps1','ps2','ps3','ps4','ps5','ps6','ps7'];
   const pcts  = [10, 25, 40, 55, 70, 88, 100];
@@ -903,49 +1026,33 @@ async function startProcessing() {
   }
 
   try {
-    activateStep(0); // Acessando Drive
-    await sleep(700);
-
-    // Coleta documentos das subpastas
-    activateStep(1); // Lendo documentos
+    activateStep(0); await sleep(600);
+    activateStep(1);
     const documentos = await coletarDocumentos();
-    await sleep(600);
-
-    activateStep(2); // Identificando tese
     await sleep(500);
-
-    activateStep(3); // Validando datas
-    await sleep(500);
-
-    activateStep(4); // Elaborando via IA
+    activateStep(2); await sleep(500);
+    activateStep(3); await sleep(400);
+    activateStep(4);
     const resultado = await gerarPecaViaIA(documentos);
     await sleep(500);
+    activateStep(5); await sleep(500);
+    activateStep(6); await sleep(400);
 
-    activateStep(5); // Aplicando timbrado
-    await sleep(600);
-
-    activateStep(6); // Pronta
-    await sleep(500);
-
-    // Exibe a peça
     document.getElementById('step-processing').style.display = 'none';
     document.getElementById('step-peca').style.display = 'block';
     currentPecaText = resultado.peca;
     document.getElementById('peca-content').textContent = resultado.peca;
 
-    // Alertas
-    if (resultado.alertas && resultado.alertas.length) {
-      const alertsBlock = document.getElementById('alerts-block');
-      const alertsList = document.getElementById('alerts-list');
-      alertsList.innerHTML = resultado.alertas.map(a => `<div class="alert-item"><span>•</span>${a}</div>`).join('');
-      alertsBlock.style.display = 'block';
+    if (resultado.alertas?.length) {
+      document.getElementById('alerts-list').innerHTML = resultado.alertas.map(a => `<div class="alert-item"><span>•</span>${a}</div>`).join('');
+      document.getElementById('alerts-block').style.display = 'block';
     }
 
-    // Registra caso
     registrarCaso({
       id: Date.now().toString(),
-      cliente: selectedFolder.name,
-      beneficio: 'Salário-Maternidade',
+      cliente: nomeCliente,
+      mes: document.getElementById('campo-mes').value,
+      beneficio: document.getElementById('campo-beneficio').value,
       elaboradoPor: currentUser.name,
       dataElaboracao: new Date().toLocaleString('pt-BR'),
       status: 'gerada',
@@ -957,29 +1064,8 @@ async function startProcessing() {
     document.getElementById('step-processing').style.display = 'none';
     document.getElementById('step-drive').style.display = 'block';
     alert('Erro ao gerar a peça: ' + err.message);
+    console.error(err);
   }
-}
-
-async function coletarDocumentos() {
-  if (!driveToken || selectedFolder.id.startsWith('mock')) {
-    return [{ tipo: 'sem_drive', texto: `Pasta selecionada: ${selectedFolder.name}` }];
-  }
-
-  const docs = [];
-  const subfolders = await listDriveFolders(selectedFolder.id);
-
-  for (const sub of subfolders) {
-    const files = await listDriveFiles(sub.id);
-    for (const file of files) {
-      if (file.mimeType.includes('pdf') || file.mimeType.includes('image')) {
-        try {
-          const b64 = await getDriveFileBase64(file.id, file.mimeType);
-          docs.push({ tipo: sub.name, nome: file.name, mimeType: file.mimeType, base64: b64 });
-        } catch(e) { console.warn('Erro ao ler', file.name, e); }
-      }
-    }
-  }
-  return docs;
 }
 
 async function gerarPecaViaIA(documentos) {
@@ -1023,7 +1109,7 @@ ${instrucoesTexto ? 'INSTRUÇÕES JURÍDICAS ADICIONAIS DA DRA. JUCINEIDE:\n' + 
     }
   }
 
-  contentParts.push({ type: 'text', text: `Analise todos os documentos acima e elabore o Requerimento Administrativo de Salário-Maternidade completo e pronto para protocolo no INSS. Pasta da cliente: ${selectedFolder.name}` });
+  contentParts.push({ type: 'text', text: `Analise todos os documentos acima e elabore o Requerimento Administrativo de Salário-Maternidade completo e pronto para protocolo no INSS. Cliente: ${nomeCliente}` });
 
   if (CONFIG.CLAUDE_API_KEY === 'sk-ant-SUA_CHAVE_AQUI') {
     // Modo demo sem API
@@ -1048,7 +1134,7 @@ ${instrucoesTexto ? 'INSTRUÇÕES JURÍDICAS ADICIONAIS DA DRA. JUCINEIDE:\n' + 
 }
 
 function gerarPecaDemo() {
-  const partes = (selectedFolder?.name || '').split(' - ');
+  const partes = (nomeCliente || '').split(' ');
   const nome = partes[0] || '[NOME DA CLIENTE]';
   const cpf = partes[1] || '[CPF]';
   const peca = `AO INSTITUTO NACIONAL DO SEGURO SOCIAL – INSS
@@ -1113,7 +1199,7 @@ function toggleEdit() {
 function downloadDocx() {
   const texto = document.getElementById('peca-content').textContent;
   const blob = new Blob([texto], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-  const nome = (selectedFolder?.name || 'requerimento').replace(/[^a-zA-Z0-9À-ú ]/g,'').trim();
+  const nome = (nomeCliente || 'requerimento').replace(/[^a-zA-Z0-9À-ú ]/g,'').trim();
   saveAs(blob, `Requerimento_${nome}.docx`);
 }
 
@@ -1138,8 +1224,17 @@ function enviarAprovacao() {
 function resetNovoCase() {
   document.getElementById('step-peca').style.display = 'none';
   document.getElementById('step-drive').style.display = 'block';
-  selectedFolder = null;
-  clearSelection();
+  nomeCliente = '';
+  document.getElementById('campo-nome').value = '';
+  document.getElementById('cliente-selecionada-info').style.display = 'none';
+  limparTodosArquivos();
+  // Reseta steps do processamento
+  ['ps1','ps2','ps3','ps4','ps5','ps6','ps7'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.classList.remove('active','done'); el.querySelector('.step-icon').textContent = ['📄','🔍','⚖️','📅','🧠','📑','✅'][parseInt(id.replace('ps',''))-1]; }
+  });
+  document.getElementById('progress-fill').style.width = '0%';
+  document.getElementById('alerts-block').style.display = 'none';
 }
 
 // ════════════════════════════════════════
@@ -1157,7 +1252,7 @@ async function submitReajuste() {
     caso.motivoReajuste = texto;
     salvarCasos();
   }
-  addNotificacao(`Reajuste solicitado — ${caso?.cliente || selectedFolder?.name}: ${texto}`, currentUser.name);
+  addNotificacao(`Reajuste solicitado — ${caso?.cliente || nomeCliente}: ${texto}`, currentUser.name);
   atualizarBadges();
 
   // Refaz a peça com a instrução adicional
