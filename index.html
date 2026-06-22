@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fábrica de Peças — Costa Galvão Advocacia</title>
+
+<!-- Google API -->
+<script src="https://apis.google.com/js/api.js"></script>
+<script src="https://accounts.google.com/gsi/client"></script>
+
+<!-- docx para geração do .docx -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+:root {
+  --marsala: #8B2E2E;
+  --marsala-deep: #6B1F1F;
+  --gold: #B8972A;
+  --gold-light: #D4AF4A;
+  --gold-pale: #F5EDD0;
+  --navy: #1C2B3A;
+  --cream: #FAF7F2;
+  --white: #FFFFFF;
+  --gray-100: #F4F1EC;
+  --gray-200: #E8E2D9;
+  --gray-400: #9E9488;
+  --gray-600: #5C5650;
+  --gray-800: #2E2A26;
+  --success: #2E7D52;
+  --warning: #B8820A;
+  --shadow-sm: 0 1px 4px rgba(28,43,58,0.08);
+  --shadow-md: 0 4px 16px rgba(28,43,58,0.12);
+  --shadow-lg: 0 8px 32px rgba(28,43,58,0.16);
+  --radius: 8px;
+  --radius-lg: 12px;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--gray-800); min-height:100vh; }
+
+/* LOGIN */
+#login-screen {
+  min-height:100vh; display:flex; align-items:center; justify-content:center;
+  background:linear-gradient(135deg,var(--navy) 0%,var(--marsala-deep) 100%); padding:24px;
+}
+.login-card { background:var(--white); border-radius:var(--radius-lg); padding:48px 40px; width:100%; max-width:400px; box-shadow:var(--shadow-lg); text-align:center; }
+.login-logo { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:600; color:var(--marsala); letter-spacing:2px; margin-bottom:4px; }
+.login-sub { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); margin-bottom:36px; }
+.login-title { font-size:14px; color:var(--gray-600); margin-bottom:28px; }
+.form-group { margin-bottom:16px; text-align:left; }
+.form-group label { display:block; font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--gray-600); margin-bottom:6px; }
+.form-group input, .form-group select, .form-group textarea { width:100%; padding:10px 14px; border:1.5px solid var(--gray-200); border-radius:var(--radius); font-family:'DM Sans',sans-serif; font-size:14px; color:var(--gray-800); background:var(--white); transition:border-color 0.2s; outline:none; }
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color:var(--marsala); }
+
+/* BUTTONS */
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:11px 24px; border-radius:var(--radius); font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500; cursor:pointer; border:none; transition:all 0.2s; }
+.btn-primary { background:var(--marsala); color:var(--white); width:100%; }
+.btn-primary:hover { background:var(--marsala-deep); }
+.btn-gold { background:var(--gold); color:var(--white); }
+.btn-gold:hover { background:#9A7C20; }
+.btn-outline { background:transparent; border:1.5px solid var(--gray-200); color:var(--gray-600); }
+.btn-outline:hover { border-color:var(--marsala); color:var(--marsala); }
+.btn-success { background:var(--success); color:var(--white); }
+.btn-danger { background:transparent; border:1.5px solid var(--marsala); color:var(--marsala); }
+.btn-sm { padding:7px 14px; font-size:13px; }
+.btn:disabled { opacity:0.5; cursor:not-allowed; }
+
+/* APP SHELL */
+#app { display:none; min-height:100vh; flex-direction:column; }
+
+/* TOPBAR */
+.topbar { background:var(--white); border-bottom:1px solid var(--gray-200); padding:0 32px; height:60px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; box-shadow:var(--shadow-sm); }
+.topbar-brand { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:600; color:var(--marsala); letter-spacing:1px; }
+.topbar-brand span { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--gold); display:block; font-family:'DM Sans',sans-serif; font-weight:400; }
+.topbar-right { display:flex; align-items:center; gap:16px; }
+.user-badge { display:flex; align-items:center; gap:8px; font-size:13px; }
+.user-avatar { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; color:var(--white); }
+.avatar-supervisor { background:var(--marsala); }
+.avatar-operacional { background:var(--navy); }
+.role-tag { font-size:10px; padding:2px 8px; border-radius:20px; font-weight:600; letter-spacing:0.5px; text-transform:uppercase; }
+.role-supervisor { background:var(--gold-pale); color:var(--gold); }
+.role-operacional { background:#E8EDF2; color:var(--navy); }
+
+/* LAYOUT */
+.main-layout { display:flex; flex:1; }
+.sidebar { width:220px; background:var(--white); border-right:1px solid var(--gray-200); padding:24px 0; flex-shrink:0; }
+.nav-section { padding:0 16px; margin-bottom:24px; }
+.nav-section-title { font-size:10px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:var(--gray-400); padding:0 8px; margin-bottom:8px; }
+.nav-item { display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:var(--radius); font-size:13px; color:var(--gray-600); cursor:pointer; transition:all 0.15s; }
+.nav-item:hover { background:var(--gray-100); color:var(--gray-800); }
+.nav-item.active { background:var(--gold-pale); color:var(--marsala); font-weight:500; }
+.nav-icon { font-size:16px; width:20px; text-align:center; }
+.badge-count { margin-left:auto; background:var(--marsala); color:var(--white); font-size:10px; font-weight:600; padding:2px 6px; border-radius:10px; min-width:18px; text-align:center; }
+
+/* CONTENT */
+.content { flex:1; padding:32px; overflow-y:auto; }
+.page { display:none; }
+.page.active { display:block; }
+.page-header { margin-bottom:28px; }
+.page-title { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:600; color:var(--navy); margin-bottom:4px; }
+.page-subtitle { font-size:13px; color:var(--gray-400); }
+
+/* CARDS */
+.card { background:var(--white); border-radius:var(--radius-lg); border:1px solid var(--gray-200); padding:24px; box-shadow:var(--shadow-sm); margin-bottom:16px; }
+.card-title { font-size:13px; font-weight:600; letter-spacing:0.5px; color:var(--gray-600); text-transform:uppercase; margin-bottom:16px; }
+
+/* STATS */
+.stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:28px; }
+.stat-card { background:var(--white); border-radius:var(--radius-lg); border:1px solid var(--gray-200); padding:20px; box-shadow:var(--shadow-sm); }
+.stat-label { font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--gray-400); margin-bottom:8px; }
+.stat-value { font-family:'Cormorant Garamond',serif; font-size:36px; font-weight:600; color:var(--navy); line-height:1; margin-bottom:4px; }
+.stat-sub { font-size:12px; color:var(--gray-400); }
+.stat-card.c1 { border-left:3px solid var(--marsala); }
+.stat-card.c2 { border-left:3px solid var(--gold); }
+.stat-card.c3 { border-left:3px solid var(--success); }
+.stat-card.c4 { border-left:3px solid var(--warning); }
+
+/* TABLE */
+.case-table { width:100%; border-collapse:collapse; }
+.case-table th { text-align:left; font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--gray-400); padding:10px 16px; border-bottom:1px solid var(--gray-200); }
+.case-table td { padding:14px 16px; font-size:13px; border-bottom:1px solid var(--gray-100); vertical-align:middle; }
+.case-table tr:last-child td { border-bottom:none; }
+.case-table tr:hover td { background:var(--gray-100); cursor:pointer; }
+
+/* STATUS */
+.status { display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:600; }
+.status-dot { width:6px; height:6px; border-radius:50%; }
+.s-gerada { background:#E8F5EE; color:var(--success); }
+.s-gerada .status-dot { background:var(--success); }
+.s-revisao { background:var(--gold-pale); color:var(--warning); }
+.s-revisao .status-dot { background:var(--warning); }
+.s-aprovada { background:#E8EDF2; color:var(--navy); }
+.s-aprovada .status-dot { background:var(--navy); }
+.s-protocolada { background:#F0EAF5; color:#6B3D8B; }
+.s-protocolada .status-dot { background:#6B3D8B; }
+.s-reajuste { background:#FDECEA; color:var(--marsala); }
+.s-reajuste .status-dot { background:var(--marsala); }
+
+/* FOLDER GRID */
+.folder-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px; margin-bottom:20px; }
+.folder-item { display:flex; align-items:center; gap:10px; padding:12px 14px; background:var(--white); border:1.5px solid var(--gray-200); border-radius:var(--radius); cursor:pointer; transition:all 0.15s; font-size:13px; }
+.folder-item:hover { border-color:var(--gold); background:var(--gold-pale); }
+.folder-item.selected { border-color:var(--marsala); background:#FDF0F0; color:var(--marsala); font-weight:500; }
+.folder-icon { font-size:22px; flex-shrink:0; }
+
+/* DRIVE PATH */
+.drive-path { display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:12px 16px; background:var(--gray-100); border-radius:var(--radius); margin-bottom:16px; font-size:13px; color:var(--gray-600); }
+.drive-crumb { color:var(--marsala); font-weight:500; cursor:pointer; }
+.drive-crumb:hover { text-decoration:underline; }
+.drive-sep { color:var(--gray-400); }
+
+/* PROCESSING */
+.processing-card { background:var(--navy); border-radius:var(--radius-lg); padding:32px; color:var(--white); text-align:center; }
+.processing-title { font-family:'Cormorant Garamond',serif; font-size:24px; margin-bottom:8px; }
+.processing-sub { font-size:13px; color:rgba(255,255,255,0.6); margin-bottom:24px; }
+.processing-steps { list-style:none; text-align:left; max-width:400px; margin:0 auto; }
+.proc-step { display:flex; align-items:center; gap:12px; padding:10px 0; font-size:13px; color:rgba(255,255,255,0.4); border-bottom:1px solid rgba(255,255,255,0.08); transition:color 0.3s; }
+.proc-step.done { color:var(--gold-light); }
+.proc-step.active { color:var(--white); }
+.step-icon { font-size:16px; width:22px; text-align:center; }
+.progress-bar { width:100%; height:4px; background:rgba(255,255,255,0.15); border-radius:2px; margin-top:24px; overflow:hidden; }
+.progress-fill { height:100%; background:linear-gradient(90deg,var(--gold),var(--gold-light)); border-radius:2px; transition:width 0.6s ease; }
+
+/* PECA VIEWER */
+.peca-viewer { background:var(--white); border:1px solid var(--gray-200); border-radius:var(--radius-lg); overflow:hidden; }
+.peca-toolbar { display:flex; align-items:center; justify-content:space-between; padding:14px 20px; border-bottom:1px solid var(--gray-200); background:var(--gray-100); gap:12px; flex-wrap:wrap; }
+.peca-toolbar-left { display:flex; align-items:center; gap:8px; }
+.peca-toolbar-right { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.peca-content { padding:40px 48px; font-family:'DM Sans',sans-serif; font-size:13px; line-height:1.8; color:var(--gray-800); max-height:560px; overflow-y:auto; outline:none; white-space:pre-wrap; }
+.peca-content[contenteditable="true"] { border-left:3px solid var(--gold); background:#FFFDF8; }
+.peca-title-box { background:var(--gray-100); border:1px solid var(--gray-800); padding:10px 16px; text-align:center; font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; margin:20px 0; }
+.peca-section { font-weight:700; font-size:13px; margin:24px 0 10px; text-transform:uppercase; letter-spacing:0.5px; }
+
+/* ALERTS */
+.alert-block { background:#FDF0E8; border:1px solid #F0C080; border-left:4px solid var(--warning); border-radius:var(--radius); padding:16px 20px; margin-bottom:16px; }
+.alert-title { font-size:12px; font-weight:700; color:var(--warning); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; }
+.alert-item { font-size:12px; color:var(--gray-800); padding:3px 0; display:flex; gap:8px; }
+
+/* MODAL */
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(28,43,58,0.5); z-index:200; align-items:center; justify-content:center; padding:24px; }
+.modal-overlay.open { display:flex; }
+.modal { background:var(--white); border-radius:var(--radius-lg); width:100%; max-width:520px; box-shadow:var(--shadow-lg); overflow:hidden; }
+.modal-header { padding:20px 24px; border-bottom:1px solid var(--gray-200); display:flex; align-items:center; justify-content:space-between; }
+.modal-title { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:600; color:var(--navy); }
+.modal-close { background:none; border:none; font-size:20px; cursor:pointer; color:var(--gray-400); }
+.modal-body { padding:24px; }
+.modal-footer { padding:16px 24px; border-bottom:1px solid var(--gray-200); display:flex; gap:10px; justify-content:flex-end; }
+
+/* NOTIF */
+.notif-item { display:flex; gap:14px; padding:14px 16px; background:var(--white); border:1px solid var(--gray-200); border-radius:var(--radius); margin-bottom:10px; }
+.notif-item.unread { border-left:3px solid var(--marsala); background:#FDF8F8; }
+.notif-icon { font-size:22px; flex-shrink:0; }
+.notif-title { font-size:13px; font-weight:500; margin-bottom:3px; }
+.notif-meta { font-size:11px; color:var(--gray-400); }
+
+/* LOG */
+.log-row { display:flex; gap:16px; padding:12px 0; border-bottom:1px solid var(--gray-100); font-size:12px; align-items:center; }
+.log-time { color:var(--gray-400); min-width:120px; }
+.log-user { color:var(--navy); font-weight:500; min-width:120px; }
+.log-action { color:var(--gray-800); flex:1; }
+
+/* UTILS */
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.text-muted { color:var(--gray-400); font-size:12px; }
+.mt-16 { margin-top:16px; }
+.mt-24 { margin-top:24px; }
+.mb-16 { margin-bottom:16px; }
+.flex { display:flex; }
+.items-center { align-items:center; }
+.gap-8 { gap:8px; }
+.ml-auto { margin-left:auto; }
+.spinner { width:16px; height:16px; border:2px solid rgba(255,255,255,0.3); border-top-color:var(--white); border-radius:50%; animation:spin 0.8s linear infinite; display:inline-block; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* CREDENTIAL BANNER */
+.cred-banner { background:linear-gradient(135deg,var(--navy),var(--marsala-deep)); color:var(--white); border-radius:var(--radius-lg); padding:20px 24px; margin-bottom:24px; display:flex; align-items:center; gap:16px; }
+.cred-banner-text { flex:1; font-size:13px; line-height:1.6; }
+.cred-banner-text strong { color:var(--gold-light); }
+
+@media (max-width:768px) {
+  .stats-row { grid-template-columns:repeat(2,1fr); }
+  .sidebar { display:none; }
+  .content { padding:16px; }
+  .topbar { padding:0 16px; }
+  .peca-content { padding:20px; }
+  .two-col { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════
+     CONFIGURAÇÃO (editar antes de publicar)
+     ════════════════════════════════ -->
+<script>
+// ╔══════════════════════════════════════════════════════╗
+// ║  CREDENCIAIS — preencher antes de publicar no GitHub ║
+// ╚══════════════════════════════════════════════════════╝
+const CONFIG = {
+  // 1. Acesse: console.cloud.google.com
+  //    Crie um projeto → Ative "Google Drive API" e "Google Picker API"
+  //    Credenciais → OAuth 2.0 → Tipo: Aplicativo da Web
+  //    Origens JS autorizadas: https://costagalvaoadv.github.io
+  GOOGLE_CLIENT_ID: 'SEU_CLIENT_ID_AQUI.apps.googleusercontent.com',
+
+  // 2. Na mesma tela de credenciais → Chaves de API
+  GOOGLE_API_KEY: 'SUA_API_KEY_AQUI',
+
+  // 3. Acesse: console.anthropic.com → API Keys
+  //    ATENÇÃO: nunca exponha em produção pública.
+  //    Para produção: use um backend proxy (ex: Cloudflare Worker)
+  CLAUDE_API_KEY: 'sk-ant-SUA_CHAVE_AQUI',
+
+  // 4. ID raiz da pasta "Costa Galvão Advocacia" no Drive
+  //    Abra a pasta no Drive → copie o ID da URL:
+  //    drive.google.com/drive/folders/ESTE_ID_AQUI
+  ROOT_FOLDER_ID: 'ID_DA_PASTA_RAIZ_AQUI',
+
+  // Caminho fixo dentro do Drive
+  DRIVE_PATH: ['Setor Comercial', 'CONTRATOS PREVIDENCIÁRIOS FECHADOS', '2026'],
+
+  // Usuários do sistema (senha hash em produção — aqui simplificado)
+  USERS: {
+    'jucineide':    { pass: 'cg2026jus', name: 'Dra. Jucineide', role: 'supervisor', initials: 'JC' },
+    'operacional1': { pass: 'cg2026op1', name: 'Ana (Operacional)', role: 'operacional', initials: 'AN' },
+    'operacional2': { pass: 'cg2026op2', name: 'Maria (Operacional)', role: 'operacional', initials: 'MO' },
+  }
+};
+</script>
+
+<!-- ════════ LOGIN ════════ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">COSTA GALVÃO</div>
+    <div class="login-sub">Advocacia</div>
+    <p class="login-title">Fábrica de Peças — Acesso Restrito</p>
+    <div class="form-group">
+      <label>Usuário</label>
+      <input type="text" id="login-user" placeholder="seu.usuario" autocomplete="username"/>
+    </div>
+    <div class="form-group">
+      <label>Senha</label>
+      <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password"/>
+    </div>
+    <p id="login-error" style="color:var(--marsala);font-size:12px;margin-bottom:12px;display:none">Usuário ou senha incorretos.</p>
+    <button class="btn btn-primary" onclick="doLogin()">Entrar</button>
+    <p class="text-muted mt-16" style="text-align:center">Sistema interno — acesso autorizado apenas</p>
+  </div>
+</div>
+
+<!-- ════════ APP ════════ -->
+<div id="app" style="display:none;flex-direction:column;">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-brand">COSTA GALVÃO<span>Fábrica de Peças</span></div>
+    <div class="topbar-right">
+      <div id="drive-status" style="font-size:12px;color:var(--gray-400);display:none">
+        <span id="drive-status-icon">🔴</span> <span id="drive-status-text">Drive desconectado</span>
+      </div>
+      <div class="user-badge">
+        <div class="user-avatar" id="top-avatar">JC</div>
+        <div>
+          <div style="font-size:13px;font-weight:500;color:var(--gray-800)" id="top-name">Dra. Jucineide</div>
+          <div class="role-tag" id="top-role">Supervisora</div>
+        </div>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="doLogout()">Sair</button>
+    </div>
+  </div>
+
+  <div class="main-layout">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="nav-section">
+        <div class="nav-section-title">Principal</div>
+        <div class="nav-item active" onclick="showPage('dashboard')"><span class="nav-icon">📊</span>Painel</div>
+        <div class="nav-item" onclick="showPage('novo-caso')"><span class="nav-icon">➕</span>Novo Caso</div>
+        <div class="nav-item" onclick="showPage('fila')"><span class="nav-icon">📋</span>Fila de Casos<span class="badge-count" id="badge-fila">0</span></div>
+      </div>
+      <div class="nav-section" id="nav-supervisor-section">
+        <div class="nav-section-title">Supervisão</div>
+        <div class="nav-item" onclick="showPage('aprovacoes')"><span class="nav-icon">✅</span>Aprovações<span class="badge-count" id="badge-aprov">0</span></div>
+        <div class="nav-item" onclick="showPage('notificacoes')"><span class="nav-icon">🔔</span>Notificações<span class="badge-count" id="badge-notif">0</span></div>
+        <div class="nav-item" onclick="showPage('historico')"><span class="nav-icon">📁</span>Histórico</div>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+      <!-- ── DASHBOARD ── -->
+      <div class="page active" id="page-dashboard">
+        <div class="page-header">
+          <div class="page-title">Painel Geral</div>
+          <div class="page-subtitle" id="dash-date"></div>
+        </div>
+
+        <!-- Banner de configuração -->
+        <div class="cred-banner" id="config-banner">
+          <div style="font-size:28px">⚙️</div>
+          <div class="cred-banner-text">
+            <strong>Configuração necessária antes do primeiro uso:</strong><br>
+            Preencha as credenciais no bloco <code>CONFIG</code> no topo do arquivo HTML:
+            Google Client ID, API Key, Claude API Key e ID da pasta raiz no Drive.
+            Após publicar no GitHub Pages, autorize o domínio no Google Console.
+          </div>
+          <button class="btn btn-gold btn-sm" onclick="connectDrive()">🔗 Conectar Google Drive</button>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-card c1"><div class="stat-label">Aguardando Aprovação</div><div class="stat-value" id="stat-aprov">0</div><div class="stat-sub">peças geradas</div></div>
+          <div class="stat-card c2"><div class="stat-label">Em Elaboração</div><div class="stat-value" id="stat-elab">0</div><div class="stat-sub">em processamento</div></div>
+          <div class="stat-card c3"><div class="stat-label">Protocolados Hoje</div><div class="stat-value" id="stat-prot">0</div><div class="stat-sub">no INSS</div></div>
+          <div class="stat-card c4"><div class="stat-label">Total do Mês</div><div class="stat-value" id="stat-mes">0</div><div class="stat-sub">requerimentos</div></div>
+        </div>
+
+        <div class="two-col">
+          <div class="card">
+            <div class="card-title">📋 Casos Recentes</div>
+            <div id="dash-casos"><p class="text-muted">Nenhum caso registrado ainda.</p></div>
+          </div>
+          <div class="card">
+            <div class="card-title">🔔 Notificações Recentes</div>
+            <div id="dash-notifs"><p class="text-muted">Sem notificações.</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── NOVO CASO ── -->
+      <div class="page" id="page-novo-caso">
+        <div class="page-header">
+          <div class="page-title">Novo Caso</div>
+          <div class="page-subtitle">Selecione a pasta da cliente no Google Drive</div>
+        </div>
+
+        <!-- STEP 1: Selecionar mês/pasta -->
+        <div id="step-drive">
+          <div class="card">
+            <div class="card-title">📂 Google Drive — Costa Galvão Advocacia</div>
+
+            <div class="drive-path" id="drive-breadcrumb">
+              <span class="drive-crumb">Costa Galvão Advocacia</span>
+              <span class="drive-sep">›</span>
+              <span class="drive-crumb">Setor Comercial</span>
+              <span class="drive-sep">›</span>
+              <span class="drive-crumb">Contratos Previdenciários Fechados</span>
+              <span class="drive-sep">›</span>
+              <span class="drive-crumb">2026</span>
+              <span class="drive-sep">›</span>
+              <span style="color:var(--gray-400)" id="crumb-mes">Selecione o mês</span>
+            </div>
+
+            <!-- Seleção de mês -->
+            <div id="mes-selector" class="mb-16">
+              <div style="font-size:12px;color:var(--gray-400);margin-bottom:10px">Selecione o mês:</div>
+              <div class="folder-grid" id="mes-grid"></div>
+            </div>
+
+            <!-- Lista de clientes do mês -->
+            <div id="clientes-sector" style="display:none">
+              <div style="font-size:12px;color:var(--gray-400);margin-bottom:10px">Selecione a pasta da cliente:</div>
+              <div id="loading-folders" style="display:none;text-align:center;padding:20px;color:var(--gray-400)">
+                <div class="spinner" style="border-top-color:var(--marsala);margin:0 auto 8px"></div>
+                Carregando pastas do Drive...
+              </div>
+              <div class="folder-grid" id="clientes-grid"></div>
+              <div id="selected-info" style="display:none" class="mt-16">
+                <div style="background:var(--gold-pale);border:1px solid var(--gold);border-radius:var(--radius);padding:12px 16px;font-size:13px;">
+                  <strong style="color:var(--gold)">📂 Selecionada:</strong>
+                  <div id="selected-name" style="color:var(--navy);margin-top:4px;font-size:12px;font-weight:500"></div>
+                  <div id="selected-docs-preview" style="margin-top:8px"></div>
+                </div>
+                <div class="mt-16" style="display:flex;gap:10px;justify-content:flex-end">
+                  <button class="btn btn-outline btn-sm" onclick="clearSelection()">Cancelar</button>
+                  <button class="btn btn-primary" id="btn-gerar" onclick="startProcessing()">🤖 Gerar Peça Automaticamente</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2: Processando -->
+        <div id="step-processing" style="display:none">
+          <div class="processing-card">
+            <div class="processing-title">Analisando documentos...</div>
+            <div class="processing-sub" id="proc-cliente-name"></div>
+            <ul class="processing-steps" id="proc-steps-list">
+              <li class="proc-step" id="ps1"><span class="step-icon">📂</span>Acessando pasta no Google Drive</li>
+              <li class="proc-step" id="ps2"><span class="step-icon">📄</span>Lendo CNIS e documentos pessoais</li>
+              <li class="proc-step" id="ps3"><span class="step-icon">⚖️</span>Identificando categoria e tese jurídica</li>
+              <li class="proc-step" id="ps4"><span class="step-icon">🔍</span>Validando datas e tempestividade</li>
+              <li class="proc-step" id="ps5"><span class="step-icon">🧠</span>Elaborando requerimento (IA jurídica)</li>
+              <li class="proc-step" id="ps6"><span class="step-icon">📑</span>Aplicando papel timbrado</li>
+              <li class="proc-step" id="ps7"><span class="step-icon">✅</span>Peça pronta para revisão</li>
+            </ul>
+            <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+          </div>
+        </div>
+
+        <!-- STEP 3: Peça gerada -->
+        <div id="step-peca" style="display:none">
+          <div id="alerts-block" class="alert-block" style="display:none">
+            <div class="alert-title">⚠️ Alertas para revisão — Dra. Jucineide</div>
+            <div id="alerts-list"></div>
+          </div>
+          <div class="peca-viewer">
+            <div class="peca-toolbar">
+              <div class="peca-toolbar-left">
+                <span style="font-size:13px;font-weight:500;color:var(--navy)">📄 Requerimento gerado</span>
+                <span class="status s-gerada"><span class="status-dot"></span>Aguardando revisão</span>
+              </div>
+              <div class="peca-toolbar-right">
+                <button class="btn btn-outline btn-sm" onclick="toggleEdit()" id="btn-edit">✏️ Editar</button>
+                <button class="btn btn-outline btn-sm" onclick="downloadDocx()">⬇️ .docx</button>
+                <button class="btn btn-outline btn-sm" onclick="downloadPdf()">📄 PDF</button>
+                <button class="btn btn-outline btn-sm" onclick="window.print()">🖨️ Imprimir</button>
+                <button class="btn btn-danger btn-sm" onclick="openModal('modal-reajuste')">🔄 Solicitar Reajuste</button>
+                <button class="btn btn-gold btn-sm" onclick="enviarAprovacao()">📤 Enviar para Aprovação</button>
+              </div>
+            </div>
+            <div class="peca-content" id="peca-content" contenteditable="false"></div>
+          </div>
+        </div>
+
+      </div><!-- /novo-caso -->
+
+      <!-- ── FILA ── -->
+      <div class="page" id="page-fila">
+        <div class="page-header">
+          <div class="page-title">Fila de Casos</div>
+          <div class="page-subtitle">Todos os casos em andamento</div>
+        </div>
+        <div class="card">
+          <table class="case-table">
+            <thead><tr><th>Cliente</th><th>Benefício</th><th>Elaborado por</th><th>Data Elaboração</th><th>Status</th><th>Protocolo</th><th></th></tr></thead>
+            <tbody id="fila-tbody"><tr><td colspan="7" class="text-muted" style="text-align:center;padding:24px">Nenhum caso na fila.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── APROVAÇÕES ── -->
+      <div class="page" id="page-aprovacoes">
+        <div class="page-header">
+          <div class="page-title">Aprovações</div>
+          <div class="page-subtitle">Peças aguardando sua revisão e aprovação final</div>
+        </div>
+        <div id="aprovacoes-list"><p class="text-muted">Nenhuma peça aguardando aprovação.</p></div>
+      </div>
+
+      <!-- ── NOTIFICAÇÕES ── -->
+      <div class="page" id="page-notificacoes">
+        <div class="page-header">
+          <div class="page-title">Notificações</div>
+          <div class="page-subtitle">Atualizações e reajustes realizados pelo operacional</div>
+        </div>
+        <div id="notif-list"><p class="text-muted">Sem notificações.</p></div>
+      </div>
+
+      <!-- ── HISTÓRICO ── -->
+      <div class="page" id="page-historico">
+        <div class="page-header">
+          <div class="page-title">Histórico Completo</div>
+          <div class="page-subtitle">Registro de todas as peças elaboradas e protocoladas</div>
+        </div>
+        <div class="card">
+          <div class="card-title">📁 Log de Operações</div>
+          <div id="historico-log"><p class="text-muted">Nenhuma operação registrada.</p></div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main-layout -->
+</div><!-- /app -->
+
+<!-- ═══ MODAIS ═══ -->
+<div class="modal-overlay" id="modal-reajuste">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">Solicitar Reajuste</div><button class="modal-close" onclick="closeModal('modal-reajuste')">×</button></div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--gray-600);margin-bottom:16px">Descreva o erro ou o que precisa ser corrigido. O sistema irá refazer a peça.</p>
+      <div class="form-group"><label>Descrição do erro / instrução de correção</label><textarea id="reajuste-texto" rows="4" placeholder="Ex: O título do item II.1 está incorreto..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-reajuste')">Cancelar</button>
+      <button class="btn btn-primary" onclick="submitReajuste()">Enviar para Reajuste</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-instrucao">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">Instrução Jurídica para Refazer</div><button class="modal-close" onclick="closeModal('modal-instrucao')">×</button></div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--gray-600);margin-bottom:16px">Sua instrução será incorporada e aplicada neste e em futuros casos com o mesmo perfil.</p>
+      <div class="form-group"><label>Instrução jurídica</label><textarea id="instrucao-texto" rows="5" placeholder="Ex: Adicionar bloco de agrupamento (art. 122 IN 128/2022)..."></textarea></div>
+      <div class="form-group"><label>Aplicar a</label>
+        <select id="instrucao-escopo">
+          <option value="caso">Apenas este caso</option>
+          <option value="todos">Este caso + todos os futuros com o mesmo perfil</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-instrucao')">Cancelar</button>
+      <button class="btn btn-primary" onclick="submitInstrucao()">Enviar e Refazer Peça</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-protocolo">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">Registrar Protocolo</div><button class="modal-close" onclick="closeModal('modal-protocolo')">×</button></div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--gray-600);margin-bottom:16px">Confirme que o protocolo foi realizado no INSS hoje.</p>
+      <div class="form-group"><label>Número do protocolo INSS (se disponível)</label><input type="text" id="protocolo-numero" placeholder="Ex: 12345678901"/></div>
+      <div class="form-group"><label>Observações</label><textarea id="protocolo-obs" rows="3" placeholder="Opcional..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-protocolo')">Cancelar</button>
+      <button class="btn btn-success" onclick="confirmarProtocolo()">✅ Confirmar Protocolo</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════
+//  ESTADO GLOBAL
+// ════════════════════════════════════════
+let currentUser = null;
+let driveToken = null;
+let selectedFolder = null; // { id, name }
+let selectedMes = null;
+let currentPecaText = '';
+let currentCasoId = null;
+let editMode = false;
+
+// Armazenamento local dos casos (Firebase pode substituir em versão futura)
+let casos = JSON.parse(localStorage.getItem('cg_casos') || '[]');
+let notificacoes = JSON.parse(localStorage.getItem('cg_notifs') || '[]');
+let instrucoes = JSON.parse(localStorage.getItem('cg_instrucoes') || '[]');
+
+// Meses disponíveis (gerado dinamicamente)
+const MESES = ['JANEIRO/26','FEVEREIRO/26','MARÇO/26','ABRIL/26','MAIO/26','JUNHO/26',
+                'JULHO/26','AGOSTO/26','SETEMBRO/26','OUTUBRO/26','NOVEMBRO/26','DEZEMBRO/26'];
+
+// ════════════════════════════════════════
+//  AUTH
+// ════════════════════════════════════════
+function doLogin() {
+  const u = document.getElementById('login-user').value.trim().toLowerCase();
+  const p = document.getElementById('login-pass').value;
+  const err = document.getElementById('login-error');
+
+  if (CONFIG.USERS[u] && CONFIG.USERS[u].pass === p) {
+    currentUser = { ...CONFIG.USERS[u], username: u };
+    err.style.display = 'none';
+    setupUI();
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    refreshDashboard();
+    initMesSelector();
+  } else {
+    err.style.display = 'block';
+  }
+}
+
+document.getElementById('login-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+function doLogout() {
+  currentUser = null;
+  driveToken = null;
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-user').value = '';
+  document.getElementById('login-pass').value = '';
+}
+
+function setupUI() {
+  document.getElementById('top-name').textContent = currentUser.name;
+  document.getElementById('top-avatar').textContent = currentUser.initials;
+  document.getElementById('top-avatar').className = 'user-avatar ' + (currentUser.role === 'supervisor' ? 'avatar-supervisor' : 'avatar-operacional');
+  document.getElementById('top-role').textContent = currentUser.role === 'supervisor' ? 'Supervisora' : 'Operacional';
+  document.getElementById('top-role').className = 'role-tag ' + (currentUser.role === 'supervisor' ? 'role-supervisor' : 'role-operacional');
+  document.getElementById('nav-supervisor-section').style.display = currentUser.role === 'supervisor' ? 'block' : 'none';
+  document.getElementById('dash-date').textContent = new Date().toLocaleDateString('pt-BR', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+}
+
+// ════════════════════════════════════════
+//  NAVIGATION
+// ════════════════════════════════════════
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  const map = { dashboard:0, 'novo-caso':1, fila:2, aprovacoes:3, notificacoes:4, historico:5 };
+  const items = document.querySelectorAll('.nav-item');
+  if (map[id] !== undefined) items[map[id]]?.classList.add('active');
+  if (id === 'fila') renderFila();
+  if (id === 'aprovacoes') renderAprovacoes();
+  if (id === 'notificacoes') renderNotificacoes();
+  if (id === 'historico') renderHistorico();
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ════════════════════════════════════════
+//  GOOGLE DRIVE
+// ════════════════════════════════════════
+function connectDrive() {
+  if (CONFIG.GOOGLE_CLIENT_ID === 'SEU_CLIENT_ID_AQUI.apps.googleusercontent.com') {
+    alert('⚙️ Configure as credenciais no bloco CONFIG antes de conectar o Google Drive.\n\nConsulte os comentários no topo do arquivo HTML.');
+    return;
+  }
+  const client = google.accounts.oauth2.initTokenClient({
+    client_id: CONFIG.GOOGLE_CLIENT_ID,
+    scope: 'https://www.googleapis.com/auth/drive.readonly',
+    callback: (resp) => {
+      if (resp.access_token) {
+        driveToken = resp.access_token;
+        document.getElementById('drive-status').style.display = 'flex';
+        document.getElementById('drive-status-icon').textContent = '🟢';
+        document.getElementById('drive-status-text').textContent = 'Drive conectado';
+        document.getElementById('config-banner').style.display = 'none';
+      }
+    }
+  });
+  client.requestAccessToken();
+}
+
+async function listDriveFolders(parentId) {
+  if (!driveToken) return [];
+  const res = await fetch(
+    `https://www.googleapis.com/drive/v3/files?q='${parentId}'+in+parents+and+mimeType='application/vnd.google-apps.folder'+and+trashed=false&fields=files(id,name)&orderBy=name`,
+    { headers: { Authorization: `Bearer ${driveToken}` } }
+  );
+  const data = await res.json();
+  return data.files || [];
+}
+
+async function findFolderByName(parentId, name) {
+  if (!driveToken) return null;
+  const res = await fetch(
+    `https://www.googleapis.com/auth/drive/v3/files?q='${parentId}'+in+parents+and+name='${encodeURIComponent(name)}'+and+mimeType='application/vnd.google-apps.folder'&fields=files(id,name)`,
+    { headers: { Authorization: `Bearer ${driveToken}` } }
+  );
+  const data = await res.json();
+  return data.files?.[0] || null;
+}
+
+async function listDriveFiles(folderId) {
+  if (!driveToken) return [];
+  const res = await fetch(
+    `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+trashed=false&fields=files(id,name,mimeType,size)`,
+    { headers: { Authorization: `Bearer ${driveToken}` } }
+  );
+  const data = await res.json();
+  return data.files || [];
+}
+
+async function getDriveFileBase64(fileId, mimeType) {
+  // Para PDFs usa export; para imagens usa direto
+  const url = mimeType === 'application/vnd.google-apps.document'
+    ? `https://www.googleapis.com/drive/v3/files/${fileId}/export?mimeType=application/pdf`
+    : `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`;
+  const res = await fetch(url, { headers: { Authorization: `Bearer ${driveToken}` } });
+  const blob = await res.blob();
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result.split(',')[1]);
+    reader.readAsDataURL(blob);
+  });
+}
+
+// ════════════════════════════════════════
+//  SELETOR DE MÊS E CLIENTES
+// ════════════════════════════════════════
+function initMesSelector() {
+  const grid = document.getElementById('mes-grid');
+  grid.innerHTML = '';
+  MESES.forEach(mes => {
+    const el = document.createElement('div');
+    el.className = 'folder-item';
+    el.innerHTML = `<span class="folder-icon">📅</span><span>${mes}</span>`;
+    el.onclick = () => selectMes(mes, el);
+    grid.appendChild(el);
+  });
+}
+
+async function selectMes(mes, el) {
+  document.querySelectorAll('#mes-grid .folder-item').forEach(f => f.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedMes = mes;
+  document.getElementById('crumb-mes').textContent = mes;
+
+  document.getElementById('clientes-sector').style.display = 'block';
+  document.getElementById('loading-folders').style.display = 'block';
+  document.getElementById('clientes-grid').innerHTML = '';
+
+  if (!driveToken) {
+    // Sem Drive conectado: mostra pasta de exemplo
+    document.getElementById('loading-folders').style.display = 'none';
+    renderClientesMock();
+    return;
+  }
+
+  try {
+    // Navega pela estrutura do Drive
+    const ano2026 = await findFolderByName(CONFIG.ROOT_FOLDER_ID, '2026');
+    if (!ano2026) throw new Error('Pasta 2026 não encontrada');
+    const mesPasta = await findFolderByName(ano2026.id, mes);
+    if (!mesPasta) throw new Error(`Pasta ${mes} não encontrada`);
+    const clientes = await listDriveFolders(mesPasta.id);
+    document.getElementById('loading-folders').style.display = 'none';
+    renderClientesGrid(clientes, mesPasta.id);
+  } catch(e) {
+    document.getElementById('loading-folders').style.display = 'none';
+    document.getElementById('clientes-grid').innerHTML = `<p style="color:var(--marsala);font-size:13px">Erro ao carregar pastas: ${e.message}</p>`;
+  }
+}
+
+function renderClientesMock() {
+  // Fallback sem Drive conectado
+  const clientes = [
+    { id: 'mock1', name: 'VANESSA APARECIDA DA ROCHA - 40348076878 - SALÁRIO MATERNIDADE' },
+    { id: 'mock2', name: 'NAELY CLEMENTE LOPES - 71926573447 - SALÁRIO MATERNIDADE' },
+  ];
+  renderClientesGrid(clientes, null);
+}
+
+function renderClientesGrid(clientes, parentId) {
+  const grid = document.getElementById('clientes-grid');
+  grid.innerHTML = '';
+  if (!clientes.length) {
+    grid.innerHTML = '<p class="text-muted">Nenhuma pasta encontrada neste mês.</p>';
+    return;
+  }
+  clientes.forEach(c => {
+    const parts = c.name.split(' - ');
+    const nome = parts[0] || c.name;
+    const cpf = parts[1] || '';
+    const beneficio = parts[2] || '';
+    const el = document.createElement('div');
+    el.className = 'folder-item';
+    el.innerHTML = `<span class="folder-icon">📁</span><div><div style="font-size:12px;font-weight:500">${nome}</div><div class="text-muted">${cpf}${beneficio ? ' · ' + beneficio : ''}</div></div>`;
+    el.onclick = () => selectCliente(c, el, parentId);
+    grid.appendChild(el);
+  });
+}
+
+async function selectCliente(folder, el, parentId) {
+  document.querySelectorAll('#clientes-grid .folder-item').forEach(f => f.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedFolder = folder;
+
+  document.getElementById('selected-name').textContent = folder.name;
+  document.getElementById('selected-info').style.display = 'block';
+
+  // Preview dos documentos encontrados
+  if (driveToken && folder.id !== 'mock1' && folder.id !== 'mock2') {
+    const subfolders = await listDriveFolders(folder.id);
+    let docCount = 0;
+    const preview = [];
+    for (const sub of subfolders) {
+      const files = await listDriveFiles(sub.id);
+      docCount += files.length;
+      if (files.length) preview.push(`${sub.name}: ${files.length} arquivo(s)`);
+    }
+    document.getElementById('selected-docs-preview').innerHTML =
+      preview.map(p => `<div class="text-muted" style="font-size:11px">• ${p}</div>`).join('');
+  } else {
+    document.getElementById('selected-docs-preview').innerHTML =
+      '<div class="text-muted" style="font-size:11px">• Documentos Pessoais, Representação e Outros Documentos</div>';
+  }
+}
+
+function clearSelection() {
+  selectedFolder = null;
+  document.querySelectorAll('.folder-item').forEach(f => f.classList.remove('selected'));
+  document.getElementById('selected-info').style.display = 'none';
+}
+
+// ════════════════════════════════════════
+//  PROCESSAMENTO E GERAÇÃO VIA CLAUDE API
+// ════════════════════════════════════════
+async function startProcessing() {
+  if (!selectedFolder) return;
+
+  document.getElementById('step-drive').style.display = 'none';
+  document.getElementById('step-processing').style.display = 'block';
+  document.getElementById('proc-cliente-name').textContent = selectedFolder.name;
+
+  const steps = ['ps1','ps2','ps3','ps4','ps5','ps6','ps7'];
+  const pcts  = [10, 25, 40, 55, 70, 88, 100];
+
+  function activateStep(i) {
+    if (i > 0) {
+      document.getElementById(steps[i-1]).classList.remove('active');
+      document.getElementById(steps[i-1]).classList.add('done');
+      document.getElementById(steps[i-1]).querySelector('.step-icon').textContent = '✓';
+    }
+    if (i < steps.length) {
+      document.getElementById(steps[i]).classList.add('active');
+      document.getElementById('progress-fill').style.width = pcts[i] + '%';
+    }
+  }
+
+  try {
+    activateStep(0); // Acessando Drive
+    await sleep(700);
+
+    // Coleta documentos das subpastas
+    activateStep(1); // Lendo documentos
+    const documentos = await coletarDocumentos();
+    await sleep(600);
+
+    activateStep(2); // Identificando tese
+    await sleep(500);
+
+    activateStep(3); // Validando datas
+    await sleep(500);
+
+    activateStep(4); // Elaborando via IA
+    const resultado = await gerarPecaViaIA(documentos);
+    await sleep(500);
+
+    activateStep(5); // Aplicando timbrado
+    await sleep(600);
+
+    activateStep(6); // Pronta
+    await sleep(500);
+
+    // Exibe a peça
+    document.getElementById('step-processing').style.display = 'none';
+    document.getElementById('step-peca').style.display = 'block';
+    currentPecaText = resultado.peca;
+    document.getElementById('peca-content').textContent = resultado.peca;
+
+    // Alertas
+    if (resultado.alertas && resultado.alertas.length) {
+      const alertsBlock = document.getElementById('alerts-block');
+      const alertsList = document.getElementById('alerts-list');
+      alertsList.innerHTML = resultado.alertas.map(a => `<div class="alert-item"><span>•</span>${a}</div>`).join('');
+      alertsBlock.style.display = 'block';
+    }
+
+    // Registra caso
+    registrarCaso({
+      id: Date.now().toString(),
+      cliente: selectedFolder.name,
+      beneficio: 'Salário-Maternidade',
+      elaboradoPor: currentUser.name,
+      dataElaboracao: new Date().toLocaleString('pt-BR'),
+      status: 'gerada',
+      peca: resultado.peca,
+      alertas: resultado.alertas || []
+    });
+
+  } catch(err) {
+    document.getElementById('step-processing').style.display = 'none';
+    document.getElementById('step-drive').style.display = 'block';
+    alert('Erro ao gerar a peça: ' + err.message);
+  }
+}
+
+async function coletarDocumentos() {
+  if (!driveToken || selectedFolder.id.startsWith('mock')) {
+    return [{ tipo: 'sem_drive', texto: `Pasta selecionada: ${selectedFolder.name}` }];
+  }
+
+  const docs = [];
+  const subfolders = await listDriveFolders(selectedFolder.id);
+
+  for (const sub of subfolders) {
+    const files = await listDriveFiles(sub.id);
+    for (const file of files) {
+      if (file.mimeType.includes('pdf') || file.mimeType.includes('image')) {
+        try {
+          const b64 = await getDriveFileBase64(file.id, file.mimeType);
+          docs.push({ tipo: sub.name, nome: file.name, mimeType: file.mimeType, base64: b64 });
+        } catch(e) { console.warn('Erro ao ler', file.name, e); }
+      }
+    }
+  }
+  return docs;
+}
+
+async function gerarPecaViaIA(documentos) {
+  // Instrucoes jurídicas acumuladas
+  const instrucoesTexto = instrucoes.map(i => `- ${i}`).join('\n');
+
+  // Monta o prompt
+  const systemPrompt = `Você é um Advogado Especialista Sênior em Direito Previdenciário do escritório Costa Galvão Advocacia (Dra. Jucineide dos Santos Costa, OAB/PE 38.575, Rua Dr. José Mariano 345, Centro, Garanhuns/PE, CEP 55.295-335).
+
+PROTOCOLO DE FLUXO DIRETO — REGRAS ABSOLUTAS:
+1. Leia TODOS os documentos enviados e extraia: nome completo, CPF, RG, NIT/PIS, data de nascimento, endereço completo, dados do filho (nome, data nascimento, matrícula certidão), histórico de vínculos do CNIS, competências, indicadores (PSC-MEN-SM-EC103, etc).
+2. Identifique automaticamente: categoria da segurada (empregada ativa / desempregada em período de graça / facultativa / CI / MEI / rural), tese jurídica aplicável, riscos e blindagens necessárias.
+3. Se houver divergência de nome entre documentos, inclua tópico preliminar "I. DA REGULARIZAÇÃO CADASTRAL" tratando a questão antes do mérito.
+4. Aplique SEMPRE o fundamento correto por categoria:
+   - Empregada ativa: art. 26, VI, Lei 8.213/91 (sem carência)
+   - Desempregada em período de graça: art. 15, II c/c art. 26, VI, Lei 8.213/91
+   - Facultativa/CI: ADI 2110/STF + art. 464-A Portaria 991/2022 + IN 188/2025 art. 200 §4º + §2º Enunciado 19 CRPS (se pagamento próximo ao parto)
+   - Rural/Especial: Ofício Circular 63/2025/DIRBEN-INSS + ADI 2110
+5. Se CNIS apresentar competências com indicador PSC-MEN-SM-EC103: inclua OBRIGATORIAMENTE bloco de agrupamento (art. 122 IN 128/2022 + art. 195 §14 CF) e pedido subsidiário de abertura de exigência para complementação GPS/DARF.
+6. NUNCA invente dados. Use [DADO AUSENTE] apenas se o documento não contiver a informação.
+7. Gere a peça COMPLETA em formato texto corrido, pronta para protocolo. Use o padrão estrutural: endereçamento → qualificação → título em caixa alta → I. BREVE HISTÓRICO → II. DO DIREITO (com subitens numerados) → III. DO PEDIDO (em bullets) → fecho → local/data → assinaturas → DOCUMENTOS ANEXOS.
+8. Ao final, após a peça, inclua uma linha "---ALERTAS---" seguida de cada alerta em linha separada começando com "•".
+
+${instrucoesTexto ? 'INSTRUÇÕES JURÍDICAS ADICIONAIS DA DRA. JUCINEIDE:\n' + instrucoesTexto : ''}`;
+
+  // Monta mensagem com documentos
+  const contentParts = [];
+
+  // Adiciona documentos como imagens/PDFs
+  for (const doc of documentos) {
+    if (doc.base64) {
+      const isPdf = doc.mimeType.includes('pdf');
+      if (isPdf) {
+        contentParts.push({ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: doc.base64 } });
+      } else if (doc.mimeType.includes('image')) {
+        const imgType = doc.mimeType.includes('png') ? 'image/png' : 'image/jpeg';
+        contentParts.push({ type: 'image', source: { type: 'base64', media_type: imgType, data: doc.base64 } });
+      }
+    } else if (doc.texto) {
+      contentParts.push({ type: 'text', text: `Contexto: ${doc.texto}` });
+    }
+  }
+
+  contentParts.push({ type: 'text', text: `Analise todos os documentos acima e elabore o Requerimento Administrativo de Salário-Maternidade completo e pronto para protocolo no INSS. Pasta da cliente: ${selectedFolder.name}` });
+
+  if (CONFIG.CLAUDE_API_KEY === 'sk-ant-SUA_CHAVE_AQUI') {
+    // Modo demo sem API
+    return gerarPecaDemo();
+  }
+
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-api-key': CONFIG.CLAUDE_API_KEY, 'anthropic-version': '2023-06-01' },
+    body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 4000, system: systemPrompt, messages: [{ role: 'user', content: contentParts }] })
+  });
+
+  if (!response.ok) throw new Error(`Claude API: ${response.status}`);
+  const data = await response.json();
+  const texto = data.content.find(c => c.type === 'text')?.text || '';
+
+  // Separa peça dos alertas
+  const [pecaRaw, alertasRaw] = texto.split('---ALERTAS---');
+  const alertas = alertasRaw ? alertasRaw.trim().split('\n').filter(l => l.startsWith('•')).map(l => l.slice(1).trim()) : [];
+
+  return { peca: pecaRaw.trim(), alertas };
+}
+
+function gerarPecaDemo() {
+  const partes = (selectedFolder?.name || '').split(' - ');
+  const nome = partes[0] || '[NOME DA CLIENTE]';
+  const cpf = partes[1] || '[CPF]';
+  const peca = `AO INSTITUTO NACIONAL DO SEGURO SOCIAL – INSS
+
+${nome}, por meio de sua advogada que esta subscreve (procuração em anexo), com endereço profissional na Rua Dr. José Mariano, nº 345, Centro, Garanhuns/PE, CEP 55.295-335, vem, perante Vossa Senhoria, respeitosamente, Requerer:
+
+SALÁRIO-MATERNIDADE URBANO
+
+I. BREVE HISTÓRICO
+
+[Peça gerada em modo demonstração — conecte o Google Drive e configure a Claude API para geração completa e automática a partir dos documentos reais da cliente.]
+
+CPF informado: ${cpf}
+
+II. DO DIREITO NA VIA ADMINISTRATIVA
+
+[Após configuração completa, o sistema irá:
+• Ler o CNIS e identificar a categoria da segurada automaticamente
+• Calcular período de graça e validar datas
+• Aplicar a tese jurídica correta (ADI 2110, art. 15, II, §2º Enunciado 19 etc.)
+• Inserir bloco de agrupamento se houver PSC-MEN-SM-EC103
+• Gerar a peça completa pronta para protocolo]
+
+III. DO PEDIDO
+
+• o recebimento e regular processamento do presente requerimento;
+• a concessão do benefício de SALÁRIO-MATERNIDADE URBANO.
+
+Nesses termos, pede e espera deferimento.
+
+Garanhuns/PE, ${new Date().toLocaleDateString('pt-BR')}.
+
+_______________________________________
+${nome}
+CPF nº ${cpf}
+
+_______________________________________
+Dra. Jucineide dos Santos Costa
+OAB/PE nº 38.575
+
+DOCUMENTOS ANEXOS
+1. Cópia do RG e CPF;
+2. Procuração;
+3. Certidão de Nascimento;
+4. Extrato do CNIS.`;
+
+  return { peca, alertas: ['Sistema em modo demonstração — configure Google Client ID, API Key e Claude API Key para geração real.'] };
+}
+
+// ════════════════════════════════════════
+//  AÇÕES DA PEÇA
+// ════════════════════════════════════════
+function toggleEdit() {
+  editMode = !editMode;
+  const content = document.getElementById('peca-content');
+  content.contentEditable = editMode ? 'true' : 'false';
+  document.getElementById('btn-edit').textContent = editMode ? '💾 Salvar Edição' : '✏️ Editar';
+  if (editMode) { content.focus(); }
+  else { currentPecaText = content.textContent; }
+}
+
+function downloadDocx() {
+  const texto = document.getElementById('peca-content').textContent;
+  const blob = new Blob([texto], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+  const nome = (selectedFolder?.name || 'requerimento').replace(/[^a-zA-Z0-9À-ú ]/g,'').trim();
+  saveAs(blob, `Requerimento_${nome}.docx`);
+}
+
+function downloadPdf() {
+  window.print();
+}
+
+function enviarAprovacao() {
+  const casoAtual = casos[casos.length - 1];
+  if (casoAtual) {
+    casoAtual.status = 'aguardando_aprovacao';
+    casoAtual.peca = document.getElementById('peca-content').textContent;
+    salvarCasos();
+    addNotificacao(`Peça enviada para aprovação — ${casoAtual.cliente}`, 'sistema');
+    atualizarBadges();
+  }
+  alert('Peça enviada para aprovação da Dra. Jucineide.');
+  showPage('fila');
+  resetNovoCase();
+}
+
+function resetNovoCase() {
+  document.getElementById('step-peca').style.display = 'none';
+  document.getElementById('step-drive').style.display = 'block';
+  selectedFolder = null;
+  clearSelection();
+}
+
+// ════════════════════════════════════════
+//  REAJUSTE E INSTRUÇÃO
+// ════════════════════════════════════════
+async function submitReajuste() {
+  const texto = document.getElementById('reajuste-texto').value.trim();
+  if (!texto) { alert('Descreva o que precisa ser corrigido.'); return; }
+  closeModal('modal-reajuste');
+
+  // Registra reajuste e notifica supervisora
+  const caso = casos[casos.length - 1];
+  if (caso) {
+    caso.status = 'reajuste';
+    caso.motivoReajuste = texto;
+    salvarCasos();
+  }
+  addNotificacao(`Reajuste solicitado — ${caso?.cliente || selectedFolder?.name}: ${texto}`, currentUser.name);
+  atualizarBadges();
+
+  // Refaz a peça com a instrução adicional
+  document.getElementById('step-peca').style.display = 'none';
+  document.getElementById('step-processing').style.display = 'block';
+  instrucoes.push(texto);
+  localStorage.setItem('cg_instrucoes', JSON.stringify(instrucoes));
+  const docs = await coletarDocumentos();
+  const resultado = await gerarPecaViaIA(docs);
+  document.getElementById('step-processing').style.display = 'none';
+  document.getElementById('step-peca').style.display = 'block';
+  document.getElementById('peca-content').textContent = resultado.peca;
+  currentPecaText = resultado.peca;
+  if (caso) caso.peca = resultado.peca;
+  salvarCasos();
+}
+
+async function submitInstrucao() {
+  const texto = document.getElementById('instrucao-texto').value.trim();
+  const escopo = document.getElementById('instrucao-escopo').value;
+  if (!texto) { alert('Descreva a instrução jurídica.'); return; }
+  closeModal('modal-instrucao');
+
+  if (escopo === 'todos') {
+    instrucoes.push(texto);
+    localStorage.setItem('cg_instrucoes', JSON.stringify(instrucoes));
+  }
+
+  // Refaz a peça do caso em aprovação
+  const docs = await coletarDocumentos();
+  const resultado = await gerarPecaViaIA(docs);
+  const caso = casos.find(c => c.status === 'aguardando_aprovacao');
+  if (caso) { caso.peca = resultado.peca; salvarCasos(); }
+  renderAprovacoes();
+  alert('Peça refeita com a instrução aplicada.');
+}
+
+// ════════════════════════════════════════
+//  APROVAÇÃO E PROTOCOLO
+// ════════════════════════════════════════
+function aprovarCaso(casoId) {
+  const caso = casos.find(c => c.id === casoId);
+  if (!caso) return;
+  caso.status = 'aprovada';
+  caso.aprovadoPor = currentUser.name;
+  caso.dataAprovacao = new Date().toLocaleString('pt-BR');
+  salvarCasos();
+  addNotificacao(`Peça aprovada — ${caso.cliente} — protocolo liberado`, currentUser.name);
+  atualizarBadges();
+  renderAprovacoes();
+  alert('✅ Aprovado! O operacional foi notificado e pode protocolar.');
+}
+
+function abrirProtocolo(casoId) {
+  currentCasoId = casoId;
+  openModal('modal-protocolo');
+}
+
+function confirmarProtocolo() {
+  const numero = document.getElementById('protocolo-numero').value;
+  const obs = document.getElementById('protocolo-obs').value;
+  const caso = casos.find(c => c.id === currentCasoId);
+  if (!caso) return;
+  caso.status = 'protocolada';
+  caso.protocolo = { numero, obs, data: new Date().toLocaleString('pt-BR'), por: currentUser.name };
+  salvarCasos();
+  addNotificacao(`Protocolado — ${caso.cliente}${numero ? ' · Nº ' + numero : ''}`, currentUser.name);
+  atualizarBadges();
+  closeModal('modal-protocolo');
+  renderFila();
+  alert('✅ Protocolo registrado com sucesso!');
+}
+
+// ════════════════════════════════════════
+//  RENDERIZAÇÕES
+// ════════════════════════════════════════
+function renderFila() {
+  const tbody = document.getElementById('fila-tbody');
+  if (!casos.length) { tbody.innerHTML = '<tr><td colspan="7" class="text-muted" style="text-align:center;padding:24px">Nenhum caso na fila.</td></tr>'; return; }
+  tbody.innerHTML = casos.map(c => {
+    const statusMap = { gerada:'s-gerada', aguardando_aprovacao:'s-revisao', aprovada:'s-aprovada', protocolada:'s-protocolada', reajuste:'s-reajuste' };
+    const labelMap = { gerada:'Gerada', aguardando_aprovacao:'Aguard. Aprovação', aprovada:'Aprovada', protocolada:'Protocolada', reajuste:'Em Reajuste' };
+    const cls = statusMap[c.status] || 's-gerada';
+    const lbl = labelMap[c.status] || c.status;
+    const btnProtocolo = c.status === 'aprovada'
+      ? `<button class="btn btn-success btn-sm" onclick="abrirProtocolo('${c.id}')">📤 Protocolar</button>`
+      : `<button class="btn btn-outline btn-sm" onclick="">Ver</button>`;
+    return `<tr>
+      <td><strong>${c.cliente.split(' - ')[0]}</strong><div class="text-muted">${c.cliente.split(' - ')[1] || ''}</div></td>
+      <td>${c.beneficio}</td>
+      <td>${c.elaboradoPor}</td>
+      <td>${c.dataElaboracao}</td>
+      <td><span class="status ${cls}"><span class="status-dot"></span>${lbl}</span></td>
+      <td class="text-muted">${c.protocolo?.data || '—'}</td>
+      <td>${btnProtocolo}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderAprovacoes() {
+  const list = document.getElementById('aprovacoes-list');
+  const pendentes = casos.filter(c => c.status === 'aguardando_aprovacao' || c.status === 'reajuste');
+  if (!pendentes.length) { list.innerHTML = '<p class="text-muted">Nenhuma peça aguardando aprovação.</p>'; return; }
+  list.innerHTML = pendentes.map(c => `
+    <div class="card mb-16">
+      <div class="card-title">📋 ${c.cliente.split(' - ')[0]} — ${c.beneficio}</div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+        <span class="status ${c.status === 'reajuste' ? 's-reajuste' : 's-revisao'}"><span class="status-dot"></span>${c.status === 'reajuste' ? 'Reajuste realizado' : 'Aguardando aprovação'}</span>
+        <span class="text-muted">${c.elaboradoPor} · ${c.dataElaboracao}</span>
+      </div>
+      ${c.motivoReajuste ? `<div style="background:#FDF0E8;border:1px solid #F0C080;border-radius:var(--radius);padding:10px 14px;margin-bottom:12px;font-size:12px;"><strong style="color:var(--warning)">Motivo do reajuste:</strong> ${c.motivoReajuste}</div>` : ''}
+      ${c.alertas?.length ? `<div class="alert-block"><div class="alert-title">⚠️ Alertas do sistema</div>${c.alertas.map(a=>`<div class="alert-item"><span>•</span>${a}</div>`).join('')}</div>` : ''}
+      <div class="peca-viewer mt-16">
+        <div class="peca-toolbar">
+          <div class="peca-toolbar-left"><span style="font-size:13px;font-weight:500">📄 Peça para aprovação</span></div>
+          <div class="peca-toolbar-right">
+            <button class="btn btn-outline btn-sm" onclick="openModal('modal-instrucao')">📝 Instrução para Refazer</button>
+            <button class="btn btn-success btn-sm" onclick="aprovarCaso('${c.id}')">✅ Aprovar e Liberar Protocolo</button>
+          </div>
+        </div>
+        <div class="peca-content" style="max-height:300px">${c.peca || ''}</div>
+      </div>
+    </div>`).join('');
+}
+
+function renderNotificacoes() {
+  const list = document.getElementById('notif-list');
+  if (!notificacoes.length) { list.innerHTML = '<p class="text-muted">Sem notificações.</p>'; return; }
+  list.innerHTML = notificacoes.slice().reverse().map(n => `
+    <div class="notif-item ${n.lida ? '' : 'unread'}">
+      <div class="notif-icon">${n.icone}</div>
+      <div>
+        <div class="notif-title">${n.texto}</div>
+        <div class="notif-meta">${n.por} · ${n.data}</div>
+      </div>
+    </div>`).join('');
+  notificacoes.forEach(n => n.lida = true);
+  localStorage.setItem('cg_notifs', JSON.stringify(notificacoes));
+}
+
+function renderHistorico() {
+  const log = document.getElementById('historico-log');
+  if (!casos.length) { log.innerHTML = '<p class="text-muted">Nenhuma operação registrada.</p>'; return; }
+  const statusMap = { gerada:'s-gerada', aguardando_aprovacao:'s-revisao', aprovada:'s-aprovada', protocolada:'s-protocolada', reajuste:'s-reajuste' };
+  const labelMap = { gerada:'Gerada', aguardando_aprovacao:'Aguard. Aprovação', aprovada:'Aprovada', protocolada:'Protocolada', reajuste:'Em Reajuste' };
+  log.innerHTML = casos.slice().reverse().map(c => `
+    <div class="log-row">
+      <div class="log-time">${c.dataElaboracao}</div>
+      <div class="log-user">${c.elaboradoPor}</div>
+      <div class="log-action">Peça gerada — ${c.cliente.split(' - ')[0]}</div>
+      <div><span class="status ${statusMap[c.status] || 's-gerada'}" style="font-size:10px"><span class="status-dot"></span>${labelMap[c.status] || c.status}</span></div>
+    </div>
+    ${c.protocolo ? `<div class="log-row">
+      <div class="log-time">${c.protocolo.data}</div>
+      <div class="log-user">${c.protocolo.por}</div>
+      <div class="log-action">Protocolado no INSS — ${c.cliente.split(' - ')[0]}${c.protocolo.numero ? ' · Nº ' + c.protocolo.numero : ''}</div>
+      <div><span class="status s-protocolada" style="font-size:10px"><span class="status-dot"></span>Protocolada</span></div>
+    </div>` : ''}
+  `).join('');
+}
+
+function refreshDashboard() {
+  document.getElementById('stat-aprov').textContent = casos.filter(c => c.status === 'aguardando_aprovacao').length;
+  document.getElementById('stat-elab').textContent = casos.filter(c => c.status === 'gerada').length;
+  document.getElementById('stat-prot').textContent = casos.filter(c => c.status === 'protocolada' && c.protocolo?.data?.includes(new Date().toLocaleDateString('pt-BR').slice(0,8))).length;
+  document.getElementById('stat-mes').textContent = casos.length;
+  atualizarBadges();
+}
+
+function atualizarBadges() {
+  document.getElementById('badge-fila').textContent = casos.filter(c => !['protocolada'].includes(c.status)).length || '0';
+  document.getElementById('badge-aprov').textContent = casos.filter(c => ['aguardando_aprovacao','reajuste'].includes(c.status)).length || '0';
+  document.getElementById('badge-notif').textContent = notificacoes.filter(n => !n.lida).length || '0';
+  refreshDashboard();
+}
+
+// ════════════════════════════════════════
+//  UTILITÁRIOS
+// ════════════════════════════════════════
+function registrarCaso(caso) {
+  casos.push(caso);
+  salvarCasos();
+  atualizarBadges();
+}
+
+function salvarCasos() {
+  localStorage.setItem('cg_casos', JSON.stringify(casos));
+}
+
+function addNotificacao(texto, por) {
+  const icones = { sistema:'📄', 'Dra. Jucineide':'✅' };
+  notificacoes.push({ texto, por, data: new Date().toLocaleString('pt-BR'), icone: icones[por] || '🔔', lida: false });
+  localStorage.setItem('cg_notifs', JSON.stringify(notificacoes));
+  atualizarBadges();
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+</script>
+</body>
+</html>
