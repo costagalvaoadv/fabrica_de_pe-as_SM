@@ -6,8 +6,6 @@
 <title>Fábrica de Peças — Costa Galvão Advocacia</title>
 
 <!-- Google API -->
-<script src="https://apis.google.com/js/api.js"></script>
-<script src="https://accounts.google.com/gsi/client"></script>
 
 <!-- docx para geração do .docx -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
@@ -272,41 +270,6 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--gr
 <!-- ════════════════════════════════
      CONFIGURAÇÃO (editar antes de publicar)
      ════════════════════════════════ -->
-<script>
-// ╔══════════════════════════════════════════════════════╗
-// ║  CREDENCIAIS — preencher antes de publicar no GitHub ║
-// ╚══════════════════════════════════════════════════════╝
-const CONFIG = {
-  // 1. Acesse: console.cloud.google.com
-  //    Crie um projeto → Ative "Google Drive API" e "Google Picker API"
-  //    Credenciais → OAuth 2.0 → Tipo: Aplicativo da Web
-  //    Origens JS autorizadas: https://costagalvaoadv.github.io
-  GOOGLE_CLIENT_ID: 'SEU_CLIENT_ID_AQUI.apps.googleusercontent.com',
-
-  // 2. Na mesma tela de credenciais → Chaves de API
-  GOOGLE_API_KEY: 'SUA_API_KEY_AQUI',
-
-  // 3. Acesse: console.anthropic.com → API Keys
-  //    ATENÇÃO: nunca exponha em produção pública.
-  //    Para produção: use um backend proxy (ex: Cloudflare Worker)
-  CLAUDE_API_KEY: 'sk-ant-SUA_CHAVE_AQUI',
-
-  // 4. ID raiz da pasta "Costa Galvão Advocacia" no Drive
-  //    Abra a pasta no Drive → copie o ID da URL:
-  //    drive.google.com/drive/folders/ESTE_ID_AQUI
-  ROOT_FOLDER_ID: 'ID_DA_PASTA_RAIZ_AQUI',
-
-  // Caminho fixo dentro do Drive
-  DRIVE_PATH: ['Setor Comercial', 'CONTRATOS PREVIDENCIÁRIOS FECHADOS', '2026'],
-
-  // Usuários do sistema (senha hash em produção — aqui simplificado)
-  USERS: {
-    'jucineide':    { pass: '1234', name: 'Dra. Jucineide', role: 'supervisor', initials: 'JC' },
-    'operacional1': { pass: '1234', name: 'Ana (Operacional)', role: 'operacional', initials: 'AN' },
-    'operacional2': { pass: '1234', name: 'Maria (Operacional)', role: 'operacional', initials: 'MO' },
-  }
-};
-</script>
 
 <!-- ════════ LOGIN ════════ -->
 <div id="login-screen">
@@ -714,16 +677,54 @@ const CONFIG = {
 </div>
 
 <script>
+// ╔══════════════════════════════════════════════════════╗
+// ║  CREDENCIAIS — preencher antes de publicar no GitHub ║
+// ╚══════════════════════════════════════════════════════╝
+const CONFIG = {
+  // 1. Acesse: console.cloud.google.com
+  //    Crie um projeto → Ative "Google Drive API" e "Google Picker API"
+  //    Credenciais → OAuth 2.0 → Tipo: Aplicativo da Web
+  //    Origens JS autorizadas: https://costagalvaoadv.github.io
+  GOOGLE_CLIENT_ID: 'SEU_CLIENT_ID_AQUI.apps.googleusercontent.com',
+
+  // 2. Na mesma tela de credenciais → Chaves de API
+  GOOGLE_API_KEY: 'SUA_API_KEY_AQUI',
+
+  // 3. Acesse: console.anthropic.com → API Keys
+  //    ATENÇÃO: nunca exponha em produção pública.
+  //    Para produção: use um backend proxy (ex: Cloudflare Worker)
+  CLAUDE_API_KEY: 'sk-ant-SUA_CHAVE_AQUI',
+
+  // 4. ID raiz da pasta "Costa Galvão Advocacia" no Drive
+  //    Abra a pasta no Drive → copie o ID da URL:
+  //    drive.google.com/drive/folders/ESTE_ID_AQUI
+  ROOT_FOLDER_ID: 'ID_DA_PASTA_RAIZ_AQUI',
+
+  // Caminho fixo dentro do Drive
+  DRIVE_PATH: ['Setor Comercial', 'CONTRATOS PREVIDENCIÁRIOS FECHADOS', '2026'],
+
+  // Usuários do sistema (senha hash em produção — aqui simplificado)
+  USERS: {
+    'jucineide':    { pass: '1234', name: 'Dra. Jucineide', role: 'supervisor', initials: 'JC' },
+    'operacional1': { pass: '1234', name: 'Ana (Operacional)', role: 'operacional', initials: 'AN' },
+    'operacional2': { pass: '1234', name: 'Maria (Operacional)', role: 'operacional', initials: 'MO' },
+  }
+};
+
+// ════════ LOGIN ABAIXO ════════
+
 // ════════════════════════════════════════
 //  ESTADO GLOBAL
 // ════════════════════════════════════════
 let currentUser = null;
 let driveToken = null;
-let nomeCliente = ""; // { id, name }
+let nomeCliente = '';
 let selectedMes = null;
 let currentPecaText = '';
 let currentCasoId = null;
 let editMode = false;
+let arquivos = { pessoais: [], representacao: [], outros: [] };
+let clientesPorMes = JSON.parse(localStorage.getItem('cg_clientes') || '{}');
 
 // Armazenamento local dos casos (Firebase pode substituir em versão futura)
 let casos = JSON.parse(localStorage.getItem('cg_casos') || '[]');
@@ -815,11 +816,8 @@ function closeModal(id) { document.getElementById(id).classList.remove('open'); 
 // ════════════════════════════════════════
 //  UPLOAD MANUAL DE ARQUIVOS
 // ════════════════════════════════════════
-let arquivos = { pessoais: [], representacao: [], outros: [] };
-let nomeCliente = '';
 
 // Banco local de clientes por mês
-let clientesPorMes = JSON.parse(localStorage.getItem('cg_clientes') || '{}');
 
 function atualizarClientesMes() {
   const mes = document.getElementById('campo-mes').value;
