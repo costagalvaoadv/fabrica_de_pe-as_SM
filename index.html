@@ -1335,9 +1335,30 @@ ${instrucoesTexto ? 'INSTRUÇÕES JURÍDICAS ADICIONAIS DA DRA. JUCINEIDE:\n' + 
     body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 4000, system: systemPrompt, messages: [{ role: 'user', content: contentParts }] })
   });
 
-  if (!response.ok) throw new Error(`Claude API: ${response.status}`);
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`Worker erro ${response.status}: ${errText}`);
+  }
+
   const data = await response.json();
-  const texto = data.content.find(c => c.type === 'text')?.text || '';
+
+  // Debug: verifica estrutura da resposta
+  console.log('Resposta API:', JSON.stringify(data).slice(0, 200));
+
+  // Trata erro retornado pela API
+  if (data.error) throw new Error(`API: ${data.error.message || JSON.stringify(data.error)}`);
+
+  // Extrai texto da resposta
+  const content = data.content || data.choices || [];
+  let texto = '';
+  if (Array.isArray(content)) {
+    const textBlock = content.find(c => c.type === 'text');
+    texto = textBlock?.text || content[0]?.text || content[0]?.message?.content || '';
+  } else if (typeof content === 'string') {
+    texto = content;
+  }
+
+  if (!texto) throw new Error('Resposta vazia da API. Tente novamente.');
 
   // Separa peça dos alertas
   const [pecaRaw, alertasRaw] = texto.split('---ALERTAS---');
